@@ -185,3 +185,17 @@ body {
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #e2e8f0;
 }
+
+/* Estilos para Impressão */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .modal-body {
+        overflow: visible;
+    }
+    .modal-content {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+}

@@ -3,14 +3,14 @@ CONFIGURAÇÃO DO FIREBASE
 ==================================================================
 */
 const firebaseConfig = {
-  apiKey: "AIzaSyB5JpYm8l0AlF5ZG3HtkyFZgmrpsUrDhv0",
-  authDomain: "dashboard-oficina-pro.firebaseapp.com",
-  databaseURL: "https://dashboard-oficina-pro-default-rtdb.firebaseio.com",
-  projectId: "dashboard-oficina-pro",
-  storageBucket: "dashboard-oficina-pro.appspot.com",
-  messagingSenderId: "736157192887",
-  appId: "1:736157192887:web:c23d3daade848a33d67332"
-};
+    apiKey: "AIzaSyBW6CaxaYTHbOpCRDCptaYbpFi8OHabMik",
+    authDomain: "habibi-ba516.firebaseapp.com",
+    databaseURL: "https://habibi-ba516-default-rtdb.firebaseio.com",
+    projectId: "habibi-ba516",
+    storageBucket: "habibi-ba516.firebasestorage.app",
+    messagingSenderId: "744908900549",
+    appId: "1:744908900549:web:f61575c692913fae3a08ac"
+  };
 
 /* ==================================================================
 CONFIGURAÇÃO DO IMGBB

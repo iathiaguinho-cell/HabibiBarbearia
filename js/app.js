@@ -250,6 +250,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('exportPdfBtn').dataset.id = id;
 
     renderTimeline(atendimento);
+    
+    // Adiciona a assinatura dinamicamente
+    const actionsColumn = document.getElementById('actions-column');
+    const existingSignature = actionsColumn.querySelector('.dev-signature');
+    if (existingSignature) existingSignature.remove();
+    const signatureDiv = document.createElement('div');
+    signatureDiv.className = 'dev-signature text-center text-xs text-gray-500 mt-4';
+    signatureDiv.innerHTML = `<p>Desenvolvido com 🤖 por <strong>thIAguinho Soluções</strong></p>`;
+    actionsColumn.appendChild(signatureDiv);
+
     detailsModal.classList.remove('hidden');
     detailsModal.classList.add('flex');
   };
@@ -296,6 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
   addAtendimentoBtn.addEventListener('click', async () => {
     atendimentoForm.reset();
     produtosAdicionadosState = [];
+    document.getElementById('produtosAdicionados').innerHTML = '';
     document.getElementById('atendimentoId').value = '';
     document.getElementById('atendimentoModalTitle').textContent = 'Nova Ficha de Atendimento';
     
@@ -317,16 +328,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const formaPagamento = document.getElementById('formaPagamento');
     formaPagamento.innerHTML = FORMAS_PAGAMENTO.map(f => `<option value="${f}">${f}</option>`).join('');
 
+    calculateTotal();
+
     const configRef = db.ref('config/proximaFicha');
     try {
         const { committed, snapshot } = await configRef.transaction(currentValue => (currentValue || 0) + 1);
         if (committed) {
             document.getElementById('fichaNumeroDisplay').textContent = `#${String(snapshot.val()).padStart(4, '0')}`;
+            atendimentoModal.classList.remove('hidden');
+            atendimentoModal.classList.add('flex');
+        } else {
+            showNotification('Não foi possível gerar o número da ficha. Tente novamente.', 'error');
         }
-        atendimentoModal.classList.remove('hidden');
-        atendimentoModal.classList.add('flex');
     } catch (error) {
-        showNotification('Erro ao obter número da ficha. Verifique a conexão.', 'error');
+        showNotification('Erro ao obter número da ficha. Verifique a conexão e as regras do Firebase.', 'error');
         console.error("Firebase transaction error:", error);
     }
   });

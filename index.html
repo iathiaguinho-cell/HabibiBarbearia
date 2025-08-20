@@ -10,11 +10,11 @@
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-gray-100">
+<body class="bg-stone-100">
   <!-- TELA DE LOGIN POR USUÁRIO -->
   <div id="userScreen" class="flex items-center justify-center min-h-screen p-4">
     <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-      <h1 class="text-4xl font-bold text-gray-800 font-serif">Habibi Barbearia</h1>
+      <h1 class="text-4xl font-bold text-stone-800 font-serif">Habibi Barbearia</h1>
       <p class="text-gray-500 my-8">Selecione seu perfil para iniciar</p>
       <div id="userList" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
     </div>
@@ -23,20 +23,20 @@
   <!-- APP PRINCIPAL -->
   <div id="app" class="hidden flex flex-col min-h-screen">
     <header class="bg-white shadow-md sticky top-0 z-40">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center flex-wrap gap-y-2">
         <div class="flex items-center gap-3">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 font-serif">Habibi Barbearia</h1>
+                <h1 class="text-2xl font-bold text-stone-800 font-serif">Habibi Barbearia</h1>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-          <button id="configBtn" class="btn bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 flex items-center gap-2 hidden">
-            <i class='bx bx-cog'></i><span class="hidden sm:inline">Configurações</span>
+        <div class="flex items-center gap-2 sm:gap-4">
+          <button id="configBtn" class="btn bg-stone-600 hover:bg-stone-700 text-white px-3 py-2 sm:px-4 flex items-center gap-2 hidden">
+            <i class='bx bx-cog'></i><span class="hidden sm:inline">Config</span>
           </button>
-          <button id="reportsBtn" class="btn bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 flex items-center gap-2">
+          <button id="reportsBtn" class="btn bg-stone-600 hover:bg-stone-700 text-white px-3 py-2 sm:px-4 flex items-center gap-2">
             <i class='bx bxs-report'></i><span class="hidden sm:inline">Relatórios</span>
           </button>
-          <button id="addAtendimentoBtn" class="btn bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 flex items-center gap-2">
+          <button id="addAtendimentoBtn" class="btn bg-amber-800 hover:bg-amber-900 text-white px-3 py-2 sm:px-4 flex items-center gap-2">
             <i class='bx bx-plus-circle'></i><span class="hidden sm:inline">Nova Ficha</span>
           </button>
           <div class="text-right">
@@ -53,7 +53,7 @@
 
     <footer class="bg-white shadow-top mt-8 py-4">
         <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
-            <p><strong>Endereço:</strong> R. São Paulo, 856 - Jardim America, São José do Rio Preto - SP</p>
+            <p><strong>Endereço:</strong> R. São Paulo, 856 - Jd. America, São José do Rio Preto - SP</p>
             <p><strong>Telefone:</strong> (17) 98155-3982 | <strong>Horário:</strong> Terça a Sábado, das 10h às 19h</p>
         </div>
     </footer>
@@ -88,7 +88,7 @@
           </div>
           <div class="form-group">
             <label class="block text-sm font-medium">Serviços Agendados</label>
-            <div id="servicosList" class="grid grid-cols-2 gap-2 p-2 border rounded-md bg-gray-50 max-h-40 overflow-y-auto"></div>
+            <div id="servicosList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 border rounded-md bg-gray-50 max-h-40 overflow-y-auto"></div>
           </div>
         </form>
       </div>
@@ -119,11 +119,11 @@
             <div class="space-y-6">
               <div class="bg-white rounded-lg shadow p-4">
                 <h3 class="section-title">Resumo da Ficha</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div><strong class="block text-gray-500">Agendamento:</strong> <span id="detailsAgendamento"></span></div>
                   <div><strong class="block text-gray-500">Barbeiro:</strong> <span id="detailsBarbeiro"></span></div>
-                  <div><strong class="block text-gray-500">Serviços:</strong> <span id="detailsServicos"></span></div>
-                  <div><strong class="block text-gray-500">Produtos:</strong> <span id="detailsProdutos"></span></div>
+                  <div class="col-span-2"><strong class="block text-gray-500">Serviços:</strong> <span id="detailsServicos"></span></div>
+                  <div class="col-span-2"><strong class="block text-gray-500">Produtos:</strong> <span id="detailsProdutos"></span></div>
                   <div class="col-span-2 border-t mt-2 pt-2 grid grid-cols-3">
                       <div class="text-center"><strong class="block text-gray-500">Subtotal</strong> <span id="detailsSubtotal" class="font-bold"></span></div>
                       <div class="text-center"><strong class="block text-gray-500">Desconto</strong> <span id="detailsDesconto" class="font-bold text-red-600"></span></div>

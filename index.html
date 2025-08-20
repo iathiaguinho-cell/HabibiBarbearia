@@ -6,6 +6,9 @@
   <title>Dashboard - Habibi Barbearia</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
@@ -56,82 +59,48 @@
     </footer>
   </div>
 
-  <!-- MODAL PARA CRIAR/EDITAR FICHA DE ATENDIMENTO -->
+  <!-- MODAL PARA AGENDAR (NOVA FICHA) -->
   <div id="atendimentoModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="modal-content w-full max-w-3xl">
+    <div class="modal-content w-full max-w-xl">
       <div class="modal-header flex justify-between items-center">
-        <h2 id="atendimentoModalTitle" class="text-2xl font-bold text-gray-800">Nova Ficha de Atendimento</h2>
-        <span id="fichaNumeroDisplay" class="font-bold text-lg text-amber-800"></span>
+        <h2 id="atendimentoModalTitle" class="text-2xl font-bold text-gray-800">Agendar Novo Atendimento</h2>
       </div>
       <div class="modal-body">
-        <form id="atendimentoForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <input type="hidden" id="atendimentoId">
-          <!-- Coluna Esquerda: Cliente, Barbeiro, Agendamento -->
-          <div class="space-y-4">
-            <div class="form-group">
-              <label for="clienteNome" class="block text-sm font-medium">Nome do Cliente</label>
-              <input id="clienteNome" type="text" placeholder="Nome completo" required class="p-2 border rounded w-full">
-            </div>
-            <div class="form-group">
-              <label for="barbeiroResponsavel" class="block text-sm font-medium">Barbeiro</label>
-              <select id="barbeiroResponsavel" required class="p-2 border rounded w-full"></select>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="form-group">
-                    <label for="agendamentoData" class="block text-sm font-medium">Data</label>
-                    <input id="agendamentoData" type="date" required class="p-2 border rounded w-full">
-                </div>
-                <div class="form-group">
-                    <label for="agendamentoHora" class="block text-sm font-medium">Hora</label>
-                    <input id="agendamentoHora" type="time" required class="p-2 border rounded w-full">
-                </div>
-            </div>
-             <div class="form-group">
-              <label class="block text-sm font-medium">Serviços</label>
-              <div id="servicosList" class="grid grid-cols-2 gap-2 p-2 border rounded-md bg-gray-50 max-h-40 overflow-y-auto"></div>
-            </div>
+        <form id="atendimentoForm" class="space-y-4">
+          <div class="form-group">
+            <label for="clienteNome" class="block text-sm font-medium">Nome do Cliente</label>
+            <input id="clienteNome" type="text" placeholder="Nome completo" required class="p-2 border rounded w-full">
           </div>
-          <!-- Coluna Direita: Produtos e Pagamento -->
-          <div class="space-y-4">
-            <div class="form-group">
-              <label class="block text-sm font-medium">Produtos e Consumo</label>
-              <div class="flex gap-2">
-                <select id="produtosList" class="p-2 border rounded w-full"></select>
-                <button type="button" id="addProdutoBtn" class="btn bg-gray-700 text-white px-3">Add</button>
+          <div class="grid grid-cols-2 gap-4">
+              <div class="form-group">
+                  <label for="agendamentoData" class="block text-sm font-medium">Data</label>
+                  <input id="agendamentoData" type="date" required class="p-2 border rounded w-full">
               </div>
-              <div id="produtosAdicionados" class="mt-2 space-y-1"></div>
-              <div id="produtoAvulsoContainer" class="hidden mt-2 space-y-2 border-t pt-2">
-                  <input type="text" id="produtoAvulsoNome" placeholder="Nome do item" class="p-2 border rounded w-full">
-                  <input type="number" id="produtoAvulsoPreco" placeholder="Preço (R$)" class="p-2 border rounded w-full">
-                  <button type="button" id="addProdutoAvulsoBtn" class="btn bg-blue-600 text-white w-full">Adicionar Item</button>
+              <div class="form-group">
+                  <label for="agendamentoHora" class="block text-sm font-medium">Hora</label>
+                  <input id="agendamentoHora" type="time" required class="p-2 border rounded w-full">
               </div>
-            </div>
-            <div class="form-group border-t pt-4">
-              <label for="formaPagamento" class="block text-sm font-medium">Forma de Pagamento</label>
-              <select id="formaPagamento" required class="p-2 border rounded w-full"></select>
-            </div>
-            <div class="grid grid-cols-3 gap-2 text-sm text-center">
-                <div><p class="text-gray-500">Serviços</p><p id="valorServicosDisplay" class="font-bold text-lg">R$ 0,00</p></div>
-                <div><p class="text-gray-500">Produtos</p><p id="valorProdutosDisplay" class="font-bold text-lg">R$ 0,00</p></div>
-                 <div><p class="text-gray-500">Desconto</p><input id="desconto" type="number" step="0.01" value="0" class="p-1 border rounded w-full text-center font-bold text-lg"></div>
-            </div>
-             <div class="text-center bg-gray-100 p-2 rounded-lg">
-                <p class="text-gray-600 font-bold">VALOR FINAL</p>
-                <p id="valorTotalDisplay" class="font-bold text-3xl text-green-700">R$ 0,00</p>
-            </div>
+          </div>
+          <div class="form-group">
+            <label for="barbeiroResponsavel" class="block text-sm font-medium">Barbeiro</label>
+            <select id="barbeiroResponsavel" required class="p-2 border rounded w-full"></select>
+          </div>
+          <div class="form-group">
+            <label class="block text-sm font-medium">Serviços Agendados</label>
+            <div id="servicosList" class="grid grid-cols-2 gap-2 p-2 border rounded-md bg-gray-50 max-h-40 overflow-y-auto"></div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-close-modal btn bg-gray-200 hover:bg-gray-300 text-gray-800">Cancelar</button>
-        <button type="submit" form="atendimentoForm" class="btn bg-amber-800 hover:bg-amber-900 text-white">Salvar Ficha</button>
+        <button type="submit" form="atendimentoForm" class="btn bg-amber-800 hover:bg-amber-900 text-white">Salvar Agendamento</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL DE DETALHES DO ATENDIMENTO -->
+  <!-- MODAL DE DETALHES E GERENCIAMENTO DO ATENDIMENTO -->
   <div id="detailsModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="modal-content w-full max-w-4xl" id="ficha-para-imprimir">
+    <div class="modal-content w-full max-w-4xl">
       <div class="modal-header">
         <div class="flex justify-between items-start w-full">
           <div>
@@ -142,7 +111,9 @@
         </div>
       </div>
       <div class="modal-body">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <form id="detailsForm" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <input type="hidden" id="detailsAtendimentoId">
+          <!-- Coluna Esquerda: Resumo e Histórico -->
           <div class="space-y-6">
             <div class="bg-white rounded-lg shadow p-4">
               <h3 class="section-title">Resumo da Ficha</h3>
@@ -151,12 +122,6 @@
                 <div><strong class="block text-gray-500">Barbeiro:</strong> <span id="detailsBarbeiro"></span></div>
                 <div><strong class="block text-gray-500">Serviços:</strong> <span id="detailsServicos"></span></div>
                 <div><strong class="block text-gray-500">Produtos:</strong> <span id="detailsProdutos"></span></div>
-                <div><strong class="block text-gray-500">Pagamento:</strong> <span id="detailsPagamento"></span></div>
-                <div class="col-span-2 border-t mt-2 pt-2 grid grid-cols-3">
-                    <div class="text-center"><strong class="block text-gray-500">Subtotal</strong> <span id="detailsSubtotal" class="font-bold"></span></div>
-                    <div class="text-center"><strong class="block text-gray-500">Desconto</strong> <span id="detailsDesconto" class="font-bold text-red-600"></span></div>
-                    <div class="text-center"><strong class="block text-gray-500 text-lg">Valor Final</strong> <span id="detailsValorFinal" class="text-lg font-bold text-green-700"></span></div>
-                </div>
               </div>
             </div>
             <div class="bg-white rounded-lg shadow p-4">
@@ -164,15 +129,48 @@
               <div id="timelineContainer" class="timeline mt-4 space-y-6"></div>
             </div>
           </div>
+          <!-- Coluna Direita: Ações e Fechamento -->
           <div class="space-y-6" id="actions-column">
-            <div class="bg-white rounded-lg shadow p-4 space-y-3">
-              <button id="exportPdfBtn" class="w-full btn bg-gray-700 hover:bg-gray-800 text-white">
-                <i class='bx bxs-file-pdf'></i> Exportar Ficha em PDF
-              </button>
-              <button id="deleteBtn" class="w-full btn bg-red-600 hover:bg-red-700 text-white hidden">
-                <i class='bx bx-trash'></i> Excluir Ficha
-              </button>
-            </div>
+             <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="section-title">Produtos e Consumo</h3>
+                <div class="flex gap-2">
+                  <select id="detailsProdutosList" class="p-2 border rounded w-full"></select>
+                  <button type="button" id="detailsAddProdutoBtn" class="btn bg-gray-700 text-white px-3">Add</button>
+                </div>
+                <div id="detailsProdutosAdicionados" class="mt-2 space-y-1"></div>
+                <div id="detailsProdutoAvulsoContainer" class="hidden mt-2 space-y-2 border-t pt-2">
+                    <input type="text" id="detailsProdutoAvulsoNome" placeholder="Nome do item" class="p-2 border rounded w-full">
+                    <input type="number" id="detailsProdutoAvulsoPreco" placeholder="Preço (R$)" class="p-2 border rounded w-full">
+                    <button type="button" id="detailsAddProdutoAvulsoBtn" class="btn bg-blue-600 text-white w-full">Adicionar Item</button>
+                </div>
+             </div>
+             <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="section-title">Fechamento e Observações</h3>
+                <div class="form-group">
+                    <label for="detailsFormaPagamento" class="block text-sm font-medium">Forma de Pagamento</label>
+                    <select id="detailsFormaPagamento" class="p-2 border rounded w-full"></select>
+                </div>
+                <div class="form-group mt-2">
+                    <label for="detailsDesconto" class="block text-sm font-medium">Desconto (R$)</label>
+                    <input id="detailsDesconto" type="number" step="0.01" value="0" class="p-2 border rounded w-full">
+                </div>
+                <div class="form-group mt-2">
+                    <label for="detailsObservacoes" class="block text-sm font-medium">Observações</label>
+                    <textarea id="detailsObservacoes" rows="2" class="p-2 border rounded w-full" placeholder="Cliente chegou atrasado, etc..."></textarea>
+                </div>
+                <div class="text-center bg-gray-100 p-2 rounded-lg mt-4">
+                  <p class="text-gray-600 font-bold">VALOR FINAL</p>
+                  <p id="detailsValorTotalDisplay" class="font-bold text-3xl text-green-700">R$ 0,00</p>
+                </div>
+             </div>
+             <div class="bg-white rounded-lg shadow p-4 space-y-3">
+                <button type="submit" form="detailsForm" class="w-full btn bg-green-600 hover:bg-green-700 text-white">
+                  <i class='bx bx-save'></i> Salvar Alterações
+                </button>
+                <button id="deleteBtn" class="w-full btn bg-red-600 hover:bg-red-700 text-white hidden">
+                  <i class='bx bx-trash'></i> Excluir Ficha
+                </button>
+             </div>
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ const firebaseConfig = {
     authDomain: "habibi-ba516.firebaseapp.com",
     databaseURL: "https://habibi-ba516-default-rtdb.firebaseio.com",
     projectId: "habibi-ba516",
-    storageBucket: "habibi-ba516.firebasestorage.app",
+    storageBucket: "habibi-ba516.appspot.com",
     messagingSenderId: "744908900549",
     appId: "1:744908900549:web:f61575c692913fae3a08ac"
   };
@@ -16,7 +16,7 @@ const firebaseConfig = {
 CONFIGURAÇÃO DO IMGBB
 ==================================================================
 */
-const imgbbApiKey = "57cb1c5a02fb6e5ef2700543d6245b70";
+const imgbbApiKey = "57cb1c5a02fb6e5ef2700543d6245b70"; // Chave genérica, idealmente crie a sua
 
 /* ==================================================================
 SISTEMA DE NOTIFICAÇÕES
@@ -59,11 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // --- DADOS DA BARBEARIA ---
   const USERS = [
-    { name: 'Ahmed', role: 'Gestor' }, 
-    { name: 'Fatima', role: 'Recepcionista' },
-    { name: 'Mustafa', role: 'Barbeiro' }, 
-    { name: 'Karim', role: 'Barbeiro' },
-    { name: 'Layla', role: 'Barbeira' }
+    { name: 'Habibi', role: 'Gestor' }, 
+    { name: 'Júnior', role: 'Barbeiro' }, 
+    { name: 'Willian', role: 'Barbeiro' },
+    { name: 'Recepção', role: 'Recepcionista' }
   ];
 
   const SERVICOS = [
@@ -319,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('atendimentoModalTitle').textContent = 'Novo Atendimento';
     
     const barbeiroSelect = document.getElementById('barbeiroResponsavel');
-    const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Barbeira');
+    const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Barbeira' || u.role === 'Gestor');
     barbeiroSelect.innerHTML = '<option value="">Selecione...</option>' + barbeiros.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
 
     const servicosList = document.getElementById('servicosList');

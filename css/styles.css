@@ -1,1 +1,189 @@
+/* =============== FONTES E ESTILOS GERAIS =============== */
+body { 
+  font-family: 'Roboto', sans-serif; 
+  background-color: #fdfaf6; /* Um branco mais quente */
+  overflow-x: hidden;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Adicionado para o footer */
+.shadow-top {
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+}
+
+
+/* =============== LAYOUT DO KANBAN =============== */
+.status-column { 
+  background: #f3f4f6; /* Cinza claro */
+  border-radius: 12px; 
+  display: flex; 
+  flex-direction: column; 
+  transition: all 0.3s ease; 
+  min-height: 100px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.vehicle-list { /* O nome da classe foi mantido para compatibilidade, mas o conteúdo é de clientes */
+  flex-grow: 1; 
+  transition: all 0.3s ease-in-out; 
+  max-height: 1000px; 
+  overflow: hidden;
+  padding: 0 8px 8px 8px;
+}
+
+.vehicle-list.collapsed { 
+  max-height: 0; 
+  margin-top: 0 !important;
+  padding: 0 !important;
+}
+
+.vehicle-card {
+  background: white; 
+  border-radius: 8px; 
+  padding: 12px; 
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease-in-out; 
+  border-left: 5px solid;
+  cursor: pointer;
+  position: relative;
+}
+
+.vehicle-card:hover { 
+  transform: translateY(-3px); 
+  box-shadow: 0 8px 12px rgba(0,0,0,0.1); 
+  z-index: 10;
+}
+
+/* CORES POR STATUS DA BARBEARIA */
+.vehicle-card.status-Aguardando { border-left-color: #f59e0b; } /* Ambar */
+.vehicle-card.status-Em-Atendimento { border-left-color: #3b82f6; } /* Azul */
+.vehicle-card.status-Aguardando-Pagamento { border-left-color: #10b981; } /* Verde */
+.vehicle-card.status-Finalizado { border-left-color: #6b7280; opacity: 0.9; } /* Cinza */
+
+/* =============== MODAIS =============== */
+.modal { 
+  background: rgba(0, 0, 0, 0.6); 
+  backdrop-filter: blur(5px); 
+  z-index: 50;
+}
+
+.modal-content { 
+  background: #f8fafc; 
+  border-radius: 16px; 
+  max-height: 90vh; 
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.5rem;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.modal-body {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* =============== BOTÕES =============== */
+.btn { 
+  transition: all 0.2s ease; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  padding: 0.5rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* =============== TIMELINE =============== */
+.timeline { 
+  border-left: 3px solid #e5e7eb; 
+  position: relative;
+}
+
+.timeline-item { 
+  position: relative; 
+  padding-left: 2.5rem; 
+  margin-bottom: 1.5rem;
+}
+
+.timeline-icon {
+  position: absolute; 
+  left: -0.875rem;
+  top: 0.25rem;
+  width: 1.75rem; 
+  height: 1.75rem;
+  border-radius: 9999px; 
+  background-color: white; 
+  border: 3px solid;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  z-index: 10;
+}
+
+.timeline-item-log .timeline-icon { border-color: #3b82f6; color: #3b82f6; }
+.timeline-item-status .timeline-icon { border-color: #10b981; color: #10b981; }
+
+/* =============== NOTIFICAÇÕES =============== */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  z-index: 9999;
+  transform: translateX(120%);
+  transition: transform 0.3s ease;
+  max-width: 300px;
+}
+
+.notification.show {
+  transform: translateX(0);
+}
+
+.notification.success {
+  background-color: #10b981;
+}
+
+.notification.error {
+  background-color: #ef4444;
+}
+
+/* =============== SEÇÕES DO MODAL DE DETALHES =============== */
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
 

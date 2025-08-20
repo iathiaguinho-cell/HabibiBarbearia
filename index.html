@@ -2,20 +2,16 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <!-- LINHA ESSENCIAL ADICIONADA PARA CORRIGIR A ESCALA EM CELULARES -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard - Habibi Barbearia</title>
   
-  <!-- Dependências originais mantidas -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  
-  <!-- Sua folha de estilos, que agora terá as novas cores -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="bg-stone-100">
-  <!-- TELA DE LOGIN POR USUÁRIO (Estrutura 100% preservada) -->
+  <!-- TELA DE LOGIN POR USUÁRIO -->
   <div id="userScreen" class="flex items-center justify-center min-h-screen p-4">
     <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
       <h1 class="text-4xl font-bold text-stone-800 font-serif">Habibi Barbearia</h1>
@@ -24,7 +20,7 @@
     </div>
   </div>
 
-  <!-- APP PRINCIPAL (Estrutura 100% preservada) -->
+  <!-- APP PRINCIPAL -->
   <div id="app" class="hidden flex flex-col min-h-screen">
     <header class="bg-white shadow-md sticky top-0 z-40">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center flex-wrap gap-y-2">
@@ -63,8 +59,7 @@
     </footer>
   </div>
 
-  <!-- TODOS OS MODAIS (Estrutura 100% preservada) -->
-  <!-- MODAL PARA AGENDAR (NOVA FICHA) -->
+  <!-- MODAIS (Estrutura 100% preservada) -->
   <div id="atendimentoModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div class="modal-content w-full max-w-xl">
       <div class="modal-header flex justify-between items-center">
@@ -104,7 +99,6 @@
     </div>
   </div>
 
-  <!-- MODAL DE DETALHES E GERENCIAMENTO DO ATENDIMENTO -->
   <div id="detailsModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div class="modal-content w-full max-w-4xl">
       <div id="ficha-para-imprimir" class="p-6">
@@ -120,7 +114,6 @@
         <div class="modal-body">
           <form id="detailsForm" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <input type="hidden" id="detailsAtendimentoId">
-            <!-- Coluna Esquerda: Resumo e Histórico -->
             <div class="space-y-6">
               <div class="bg-white rounded-lg shadow p-4">
                 <h3 class="section-title">Resumo da Ficha</h3>
@@ -141,7 +134,6 @@
                 <div id="timelineContainer" class="timeline mt-4 space-y-6"></div>
               </div>
             </div>
-            <!-- Coluna Direita: Ações e Fechamento -->
             <div class="space-y-6" id="actions-column">
                <div class="bg-white rounded-lg shadow p-4">
                   <h3 class="section-title">Produtos e Consumo</h3>
@@ -193,7 +185,6 @@
     </div>
   </div>
 
-  <!-- MODAL DE RELATÓRIOS -->
   <div id="reportsModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
       <div class="modal-content w-full max-w-5xl">
           <div class="modal-header">
@@ -223,15 +214,13 @@
       </div>
   </div>
 
-  <!-- MODAL DE CONFIGURAÇÕES -->
-    <div id="configModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
+  <div id="configModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
         <div class="modal-content w-full max-w-3xl">
             <div class="modal-header">
                 <h2 class="text-2xl font-bold text-gray-800">Configurações Gerais</h2>
                 <button class="btn-close-modal text-3xl text-gray-400 hover:text-gray-600">&times;</button>
             </div>
             <div class="modal-body grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Seção de Serviços -->
                 <div>
                     <h3 class="section-title">Gerenciar Serviços</h3>
                     <div id="configServicosList" class="space-y-2 mb-4"></div>
@@ -241,7 +230,6 @@
                         <button type="submit" class="btn bg-blue-600 text-white">Add</button>
                     </form>
                 </div>
-                <!-- Seção de Produtos -->
                 <div>
                     <h3 class="section-title">Gerenciar Produtos</h3>
                     <div id="configProdutosList" class="space-y-2 mb-4"></div>
@@ -255,7 +243,6 @@
         </div>
     </div>
 
-  <!-- SCRIPTS (Originais mantidos) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="js/app.js"></script>

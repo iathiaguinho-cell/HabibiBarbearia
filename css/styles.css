@@ -27,14 +27,20 @@ body {
 /* ==================================================================
 COMPONENTES PRINCIPAIS (HEADER, FOOTER, KANBAN)
 ================================================================== */
-#userScreen, #app {
-    background-color: var(--cor-fundo);
+#userScreen .bg-white, #app .bg-white {
+    background-color: var(--cor-superficie);
 }
-#userScreen h1, #app h1 {
+#userScreen .text-stone-800, #app .text-stone-800 {
     color: var(--cor-primaria);
 }
-#userScreen p {
+#userScreen .text-gray-500, #app .text-gray-500 {
     color: var(--cor-texto-secundario);
+}
+#userScreen .bg-gray-100 {
+    background-color: #2a2a2a;
+}
+#userScreen .text-gray-700 {
+    color: var(--cor-texto-principal);
 }
 
 header, footer {
@@ -107,7 +113,6 @@ footer strong {
 .vehicle-card .text-amber-800 { color: var(--cor-primaria); }
 .vehicle-card .text-green-700 { color: var(--cor-sucesso); }
 
-/* CORES POR STATUS */
 .vehicle-card.status-Aguardando { border-left-color: #f59e0b; }
 .vehicle-card.status-Em-Atendimento { border-left-color: var(--cor-info); }
 .vehicle-card.status-Aguardando-Pagamento { border-left-color: var(--cor-sucesso); }
@@ -146,14 +151,14 @@ MODAIS
 .modal-body .text-gray-800 { color: var(--cor-texto-principal); }
 .modal-body .text-gray-500 { color: var(--cor-texto-secundario); }
 .modal-body .border, .modal-body .border-t { border-color: #444; }
-.modal-body .bg-gray-100 { background-color: #333; }
+.modal-body .bg-gray-50, .modal-body .bg-gray-100 { background-color: #333; }
 .modal-body .text-green-700 { color: var(--cor-sucesso); }
 .modal-body .text-red-600 { color: var(--cor-erro); }
 
 /* ==================================================================
 FORMULÁRIOS E BOTÕES
 ================================================================== */
-.form-group label { color: var(--cor-primaria); }
+.form-group label, .form-medium { color: var(--cor-primaria); }
 input, select, textarea {
     background-color: #333;
     border: 1px solid #555;
@@ -181,7 +186,6 @@ input:focus, select:focus, textarea:focus {
   transform: translateY(-2px); 
   box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
-/* Botões com novas cores */
 .btn.bg-amber-800 { background-color: var(--cor-destaque); }
 .btn.bg-amber-800:hover { background-color: #a00000; }
 .btn.bg-stone-600 { background-color: #4a4a4a; }
@@ -216,7 +220,6 @@ TIMELINE E NOTIFICAÇÕES
 .notification.success { background-color: var(--cor-sucesso); }
 .notification.error { background-color: var(--cor-erro); }
 
-/* Estilos para Impressão (Mantidos) */
 @media print {
     .no-print { display: none !important; }
     .modal-body { overflow: visible; }

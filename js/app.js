@@ -13,12 +13,6 @@ const firebaseConfig = {
 };
 
 /* ==================================================================
-CONFIGURAÇÃO DO IMGBB
-==================================================================
-*/
-const imgbbApiKey = "57cb1c5a02fb6e5ef2700543d6245b70";
-
-/* ==================================================================
 SISTEMA DE NOTIFICAÇÕES
 ==================================================================
 */
@@ -48,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentUser = null;
   let allAtendimentos = {};
   let produtosAdicionadosState = [];
+  let configData = { servicos: [], produtos: [] };
   
   // --- DADOS DA BARBEARIA ---
   const USERS = [
@@ -56,25 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
     { name: 'Willian', role: 'Barbeiro' },
     { name: 'Recepção', role: 'Recepcionista' }
   ];
-
-  const SERVICOS = [
-      { name: 'Corte de Cabelo', price: 50.00 },
-      { name: 'Barba', price: 35.00 },
-      { name: 'Sobrancelha', price: 20.00 },
-      { name: 'Pezinho', price: 15.00 },
-      { name: 'Hidratação', price: 40.00 },
-      { name: 'Corte + Barba', price: 80.00 }
-  ];
-
-  const PRODUTOS = [
-      { name: 'Cerveja', price: 10.00 },
-      { name: 'Refrigerante', price: 8.00 },
-      { name: 'Pomada para Cabelo', price: 45.00 },
-      { name: 'Creme de Barbear', price: 30.00 }
-  ];
-
-  const FORMAS_PAGAMENTO = ['Dinheiro', 'PIX', 'Cartão de Débito', 'Cartão de Crédito'];
   
+  const FORMAS_PAGAMENTO = ['Dinheiro', 'PIX', 'Cartão de Débito', 'Cartão de Crédito'];
   const STATUS_LIST = ['Aguardando', 'Em-Atendimento', 'Aguardando-Pagamento', 'Finalizado'];
   
   // --- ELEMENTOS DA UI ---
@@ -192,12 +170,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==================================================================
   // LÓGICA PRINCIPAL
   // ==================================================================
-  const loginUser = (user) => {
+  const loadConfig = async () => {
+    const snapshot = await db.ref('config').once('value');
+    configData = snapshot.val() || { servicos: [], produtos: [] };
+  };
+
+  const loginUser = async (user) => {
     currentUser = user;
     localStorage.setItem('habibiUser', JSON.stringify(user));
     document.getElementById('currentUserName').textContent = user.name;
     userScreen.classList.add('hidden');
     app.classList.remove('hidden');
+    await loadConfig();
     initializeKanban();
     listenToAtendimentos();
   };
@@ -302,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
     location.reload();
   });
   
-  addAtendimentoBtn.addEventListener('click', async () => {
+  addAtendimentoBtn.addEventListener('click', () => {
     atendimentoForm.reset();
     produtosAdicionadosState = [];
     document.getElementById('produtosAdicionados').innerHTML = '';
@@ -314,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
     barbeiroSelect.innerHTML = '<option value="">Selecione...</option>' + barbeiros.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
 
     const servicosList = document.getElementById('servicosList');
-    servicosList.innerHTML = SERVICOS.map(s => `
+    servicosList.innerHTML = configData.servicos.map(s => `
         <label class="flex items-center space-x-2 cursor-pointer">
             <input type="checkbox" value="${s.price}" data-name="${s.name}" class="form-checkbox h-4 w-4">
             <span class="text-sm">${s.name} (${formatCurrency(s.price)})</span>
@@ -322,27 +306,16 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
 
     const produtosList = document.getElementById('produtosList');
-    produtosList.innerHTML = PRODUTOS.map(p => `<option value="${p.name}|${p.price}">${p.name} - ${formatCurrency(p.price)}</option>`).join('');
+    produtosList.innerHTML = '<option value="avulso">-- Item Avulso --</option>' + configData.produtos.map(p => `<option value="${p.name}|${p.price}">${p.name} - ${formatCurrency(p.price)}</option>`).join('');
     
     const formaPagamento = document.getElementById('formaPagamento');
     formaPagamento.innerHTML = FORMAS_PAGAMENTO.map(f => `<option value="${f}">${f}</option>`).join('');
 
     calculateTotal();
-
-    const configRef = db.ref('config/proximaFicha');
-    try {
-        const { committed, snapshot } = await configRef.transaction(currentValue => (currentValue || 0) + 1);
-        if (committed) {
-            document.getElementById('fichaNumeroDisplay').textContent = `#${String(snapshot.val()).padStart(4, '0')}`;
-            atendimentoModal.classList.remove('hidden');
-            atendimentoModal.classList.add('flex');
-        } else {
-            showNotification('Não foi possível gerar o número da ficha. Tente novamente.', 'error');
-        }
-    } catch (error) {
-        showNotification('Erro ao obter número da ficha. Verifique a conexão e as regras do Firebase.', 'error');
-        console.error("Firebase transaction error:", error);
-    }
+    
+    document.getElementById('fichaNumeroDisplay').textContent = `Aguardando...`;
+    atendimentoModal.classList.remove('hidden');
+    atendimentoModal.classList.add('flex');
   });
 
   const calculateTotal = () => {
@@ -360,10 +333,31 @@ document.addEventListener('DOMContentLoaded', () => {
   
   document.getElementById('addProdutoBtn').addEventListener('click', () => {
       const select = document.getElementById('produtosList');
+      if (select.value === 'avulso') {
+          document.getElementById('produtoAvulsoContainer').classList.remove('hidden');
+          return;
+      }
+      document.getElementById('produtoAvulsoContainer').classList.add('hidden');
       const [name, price] = select.value.split('|');
       produtosAdicionadosState.push({ name, price: parseFloat(price) });
       renderProdutosAdicionados();
       calculateTotal();
+  });
+
+  document.getElementById('addProdutoAvulsoBtn').addEventListener('click', () => {
+      const name = document.getElementById('produtoAvulsoNome').value;
+      const price = parseFloat(document.getElementById('produtoAvulsoPreco').value);
+      if (name && price > 0) {
+          produtosAdicionadosState.push({ name, price });
+          renderProdutosAdicionados();
+          calculateTotal();
+          document.getElementById('produtoAvulsoNome').value = '';
+          document.getElementById('produtoAvulsoPreco').value = '';
+          document.getElementById('produtoAvulsoContainer').classList.add('hidden');
+          document.getElementById('produtosList').value = 'avulso';
+      } else {
+          showNotification('Preencha o nome e o preço do item avulso.', 'error');
+      }
   });
 
   const renderProdutosAdicionados = () => {
@@ -387,9 +381,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   atendimentoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const fichaNumero = parseInt(document.getElementById('fichaNumeroDisplay').textContent.replace('#', ''));
     const selectedServicos = Array.from(document.querySelectorAll('#servicosList input:checked')).map(i => i.dataset.name);
     if (selectedServicos.length === 0) return showNotification("Selecione pelo menos um serviço.", "error");
+
+    const configRef = db.ref('config/proximaFicha');
+    const { committed, snapshot } = await configRef.transaction(currentValue => (currentValue || 0) + 1);
+    if (!committed) return showNotification('Erro ao gerar número da ficha. Tente salvar novamente.', 'error');
+    const fichaNumero = snapshot.val();
 
     const servicosTotal = Array.from(document.querySelectorAll('#servicosList input:checked')).reduce((sum, i) => sum + parseFloat(i.value), 0);
     const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
@@ -398,6 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const atendimentoData = {
       fichaNumero,
       clienteNome: document.getElementById('clienteNome').value,
+      agendamento: `${document.getElementById('agendamentoData').value}T${document.getElementById('agendamentoHora').value}`,
       servicos: selectedServicos,
       produtos: produtosAdicionadosState,
       barbeiroResponsavel: document.getElementById('barbeiroResponsavel').value,
@@ -494,11 +493,24 @@ document.addEventListener('DOMContentLoaded', () => {
           acc[s] = (acc[s] || 0) + 1;
           return acc;
       }, {});
+      
+      const atendimentosPorBarbeiro = filtered.reduce((acc, a) => {
+          const barbeiro = a.barbeiroResponsavel;
+          if (!acc[barbeiro]) {
+              acc[barbeiro] = { faturamento: 0, atendimentos: 0, servicos: {} };
+          }
+          acc[barbeiro].faturamento += a.valorTotal;
+          acc[barbeiro].atendimentos++;
+          a.servicos.forEach(s => {
+              acc[barbeiro].servicos[s] = (acc[barbeiro].servicos[s] || 0) + 1;
+          });
+          return acc;
+      }, {});
 
       let reportHTML = `
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div class="bg-green-100 p-4 rounded-lg text-center">
-                  <p class="text-lg text-green-800">Faturamento Total</p>
+                  <p class="text-lg text-green-800">Faturamento Total no Período</p>
                   <p class="text-3xl font-bold text-green-900">${formatCurrency(totalFaturado)}</p>
               </div>
               <div class="bg-blue-100 p-4 rounded-lg text-center">
@@ -507,15 +519,20 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
           </div>
           <div>
-              <h3 class="text-xl font-bold mb-2">Serviços Realizados</h3>
-              <table class="w-full text-left border-collapse">
-                  <thead><tr><th class="border-b-2 p-2">Serviço</th><th class="border-b-2 p-2">Quantidade</th></tr></thead>
-                  <tbody>
-                      ${Object.entries(servicosCount).sort(([,a],[,b]) => b-a).map(([serv, count]) => `
-                          <tr><td class="border-b p-2">${serv}</td><td class="border-b p-2">${count}</td></tr>
-                      `).join('')}
-                  </tbody>
-              </table>
+              <h3 class="text-xl font-bold mb-2">Desempenho por Barbeiro</h3>
+              ${Object.entries(atendimentosPorBarbeiro).map(([nome, data]) => `
+                  <div class="border rounded-lg p-4 mb-4">
+                      <h4 class="font-bold text-lg">${nome}</h4>
+                      <div class="flex justify-around mt-2">
+                          <p><strong>Faturamento:</strong> ${formatCurrency(data.faturamento)}</p>
+                          <p><strong>Atendimentos:</strong> ${data.atendimentos}</p>
+                      </div>
+                      <p class="text-sm font-semibold mt-2">Serviços:</p>
+                      <ul class="list-disc list-inside text-sm">
+                          ${Object.entries(data.servicos).map(([serv, count]) => `<li>${serv}: ${count}</li>`).join('')}
+                      </ul>
+                  </div>
+              `).join('')}
           </div>
       `;
       resultDiv.innerHTML = reportHTML;

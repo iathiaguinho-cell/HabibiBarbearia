@@ -322,7 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </label>
     `).join('');
     
-    document.getElementById('fichaNumeroDisplay').textContent = '';
     atendimentoModal.classList.remove('hidden');
     atendimentoModal.classList.add('flex');
   });

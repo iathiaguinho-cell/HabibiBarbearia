@@ -2,79 +2,96 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <!-- LINHA ESSENCIAL PARA ESCALA AUTOMÁTICA EM CELULAR E PC -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barbearia Classic Style</title>
+    <title>Gestor de Atendimentos - Barbearia</title>
+    <!-- Dependências de estilo (não foram alteradas) -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Folha de estilo com as novas cores -->
     <link rel="stylesheet" href="css/styles.css">
+    <!-- Fontes para o novo design -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="bg-gray-900 text-gray-200">
 
-    <header class="header">
-        <h1>Barbearia Classic Style</h1>
-        <p>Tradição e estilo em cada corte.</p>
-    </header>
+    <!-- Tela de Seleção de Usuário (Estrutura Original Preservada) -->
+    <div id="userScreen" class="min-h-screen flex flex-col items-center justify-center p-4">
+        <h1 class="text-4xl font-playfair text-amber-400 mb-2">Bem-vindo</h1>
+        <p class="text-gray-400 mb-8">Selecione seu usuário para continuar</p>
+        <div id="userList" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <!-- Usuários são inseridos aqui pelo JS, como no seu sistema original -->
+        </div>
+    </div>
 
-    <main class="container">
-        <section id="agendamento" class="card">
-            <h2>Faça seu Agendamento</h2>
-            <form id="booking-form">
-                <div class="form-group">
-                    <label for="nome">Seu Nome:</label>
-                    <input type="text" id="nome" name="nome" required>
-                </div>
+    <!-- Aplicação Principal Kanban (Estrutura Original Preservada) -->
+    <div id="app" class="hidden">
+        <header class="header-main flex justify-between items-center p-4 shadow-lg">
+            <h1 class="text-2xl font-playfair text-amber-400">Gestor de Atendimentos</h1>
+            <div class="flex items-center gap-4">
+                <span id="currentUserDisplay" class="font-bold"></span>
+                <button id="addAtendimentoBtn" class="btn-primary"><i class='bx bx-plus mr-2'></i>Novo Atendimento</button>
+                <button id="logoutButton" class="btn-secondary"><i class='bx bx-log-out'></i></button>
+            </div>
+        </header>
+        <main id="kanbanBoard" class="kanban-board"></main>
+    </div>
 
-                <!-- MUDANÇA: de select para checkboxes para múltiplos serviços -->
-                <div class="form-group">
-                    <label>Escolha os Serviços:</label>
-                    <div class="service-options">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="servico-corte" name="servico" value="40" data-name="Corte de Cabelo">
-                            <label for="servico-corte">Corte de Cabelo (R$ 40,00)</label>
-                        </div>
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="servico-barba" name="servico" value="30" data-name="Barba Tradicional">
-                            <label for="servico-barba">Barba Tradicional (R$ 30,00)</label>
-                        </div>
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="servico-pezinho" name="servico" value="15" data-name="Pezinho">
-                            <label for="servico-pezinho">Pezinho (R$ 15,00)</label>
-                        </div>
+    <!-- Modal de Adicionar/Editar Atendimento (Estrutura Original Preservada e Melhorada) -->
+    <div id="atendimentoModal" class="modal-overlay">
+        <div class="modal-content">
+            <form id="atendimentoForm">
+                <input type="hidden" id="atendimentoId">
+                <h3 id="modalTitle" class="text-2xl font-playfair text-amber-400 mb-6">Novo Atendimento</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="clienteNome">Nome do Cliente</label>
+                        <input type="text" id="clienteNome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="barbeiro">Barbeiro</label>
+                        <select id="barbeiro" required></select>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="data">Escolha a Data:</label>
-                    <input type="date" id="data" name="data" required>
+                <div class="form-group mt-4">
+                    <label>Serviços</label>
+                    <div id="servicosContainer" class="service-options">
+                        <!-- Checkboxes de serviços serão inseridos aqui pelo JS -->
+                    </div>
                 </div>
 
-                <!-- NOVO: Campo para adicionar desconto -->
-                <div class="form-group">
-                    <label for="desconto">Desconto (R$):</label>
-                    <input type="number" id="desconto" name="desconto" placeholder="0.00" min="0" step="0.01">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div class="form-group">
+                        <label for="desconto">Desconto (R$)</label>
+                        <input type="number" id="desconto" placeholder="0,00" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="formaPagamento">Forma de Pagamento</label>
+                        <select id="formaPagamento" required></select>
+                    </div>
                 </div>
 
-                <!-- NOVO: Exibição do valor total -->
-                <div class="total-display">
-                    <h3>Total a Pagar: R$ <span id="total-value">0.00</span></h3>
+                <div class="total-display mt-6">
+                    <h3>Total a Pagar: R$ <span id="total-value">0,00</span></h3>
                 </div>
 
-                <button type="submit" class="btn">Agendar e Confirmar</button>
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="button" class="btn-secondary modal-close">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
             </form>
-        </section>
+        </div>
+    </div>
 
-        <section id="contato" class="card">
-            <h2>Contato e Localização</h2>
-            <p>Rua da Barbearia, 123 - Centro</p>
-            <p>Telefone: (11) 98765-4321</p>
-        </section>
-    </main>
-
-    <footer class="footer">
-        <p>&copy; 2025 Barbearia Classic Style. Todos os direitos reservados.</p>
-    </footer>
-
+    <!-- Scripts do Firebase (essenciais para a funcionalidade, como no seu sistema original) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <!-- Seu script principal, agora com a lógica completa -->
     <script src="js/app.js"></script>
 </body>
 </html>

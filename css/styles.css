@@ -14,29 +14,41 @@ body {
 }
 
 
-/* =============== LAYOUT DO KANBAN =============== */
+/* =============== LAYOUT DO KANBAN RESPONSIVO =============== */
+.kanban-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+/* Em telas menores, o Kanban se torna um container de flexbox com scroll horizontal */
+@media (max-width: 1024px) {
+    .kanban-container {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 1rem; /* Espaço para a barra de rolagem */
+        scroll-snap-type: x mandatory; /* Efeito de "parada" nas colunas */
+    }
+}
+
 .status-column { 
   background: #f3f4f6; /* Cinza claro */
   border-radius: 12px; 
   display: flex; 
   flex-direction: column; 
-  transition: all 0.3s ease; 
   min-height: 100px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  /* Para o scroll horizontal em telas menores */
+  @media (max-width: 1024px) {
+    flex: 0 0 300px; /* Não encolhe, não cresce, base de 300px */
+    scroll-snap-align: start;
+  }
 }
 
 .client-list { /* Nome da classe atualizado para clareza */
   flex-grow: 1; 
-  transition: all 0.3s ease-in-out; 
-  max-height: 1000px; 
-  overflow: hidden;
+  overflow-y: auto; /* Permite scroll vertical se a lista for longa */
   padding: 0 8px 8px 8px;
-}
-
-.client-list.collapsed { 
-  max-height: 0; 
-  margin-top: 0 !important;
-  padding: 0 !important;
 }
 
 .vehicle-card { /* O nome da classe foi mantido para compatibilidade, mas o conteúdo é de clientes */

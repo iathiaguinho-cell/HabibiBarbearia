@@ -21,8 +21,8 @@ body {
     .kanban-container {
         display: flex;
         overflow-x: auto;
-        padding-bottom: 1rem;
-        scroll-snap-type: x mandatory;
+        padding-bottom: 1rem; /* Espaço para a barra de rolagem */
+        scroll-snap-type: x mandatory; /* Efeito de "parada" nas colunas */
     }
 }
 .status-column { 
@@ -35,16 +35,17 @@ body {
 }
 @media (max-width: 1024px) {
     .status-column {
-        flex: 0 0 300px;
+        flex: 0 0 300px; /* Não encolhe, não cresce, base de 300px */
         scroll-snap-align: start;
     }
 }
-.client-list {
+.client-list { 
   flex-grow: 1; 
-  overflow-y: auto; 
+  overflow-y: auto; /* Permite scroll vertical se a lista for longa */
   padding: 0 8px 8px 8px;
 }
-.vehicle-card {
+
+.vehicle-card { 
   background: white; 
   border-radius: 8px; 
   padding: 12px; 
@@ -60,12 +61,14 @@ body {
   box-shadow: 0 8px 12px rgba(0,0,0,0.1); 
   z-index: 10;
 }
+
+/* CORES POR STATUS DA BARBEARIA */
 .vehicle-card.status-Aguardando { border-left-color: #f59e0b; } /* Ambar */
 .vehicle-card.status-Em-Atendimento { border-left-color: #3b82f6; } /* Azul */
 .vehicle-card.status-Aguardando-Pagamento { border-left-color: #10b981; } /* Verde */
 .vehicle-card.status-Finalizado { border-left-color: #6b7280; opacity: 0.9; } /* Cinza */
 
-/* =============== MODAIS =============== */
+/* MODAIS */
 .modal { 
   background: rgba(0, 0, 0, 0.6); 
   backdrop-filter: blur(5px); 
@@ -79,28 +82,8 @@ body {
   display: flex;
   flex-direction: column;
 }
-.modal-header {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 1rem 1.5rem;
-  position: relative;
-  flex-shrink: 0;
-}
-.modal-body {
-  overflow-y: auto;
-  flex-grow: 1;
-  padding: 1.5rem;
-}
-.modal-footer {
-  background: white;
-  border-top: 1px solid #e2e8f0;
-  padding: 1rem 1.5rem;
-  display: flex;
-  justify-content: flex-end;
-  flex-shrink: 0;
-}
 
-/* =============== BOTÕES =============== */
+/* BOTÕES */
 .btn { 
   transition: all 0.2s ease; 
   border-radius: 8px; 
@@ -116,7 +99,34 @@ body {
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-/* =============== NOTIFICAÇÕES =============== */
+/* TIMELINE */
+.timeline { 
+  border-left: 3px solid #e5e7eb; 
+  position: relative;
+}
+.timeline-item { 
+  position: relative; 
+  padding-left: 2.5rem; 
+  margin-bottom: 1.5rem;
+}
+.timeline-icon {
+  position: absolute; 
+  left: -0.875rem;
+  top: 0.25rem;
+  width: 1.75rem; 
+  height: 1.75rem;
+  border-radius: 9999px; 
+  background-color: white; 
+  border: 3px solid;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  z-index: 10;
+}
+.timeline-item-log .timeline-icon { border-color: #3b82f6; color: #3b82f6; }
+.timeline-item-status .timeline-icon { border-color: #10b981; color: #10b981; }
+
+/* NOTIFICAÇÕES */
 .notification {
   position: fixed;
   top: 20px;
@@ -138,4 +148,18 @@ body {
 }
 .notification.error {
   background-color: #ef4444;
+}
+
+/* IMPRESSÃO */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .modal-body {
+        overflow: visible;
+    }
+    .modal-content {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
 }

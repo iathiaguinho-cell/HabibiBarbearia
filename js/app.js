@@ -69,6 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const deleteBtn = document.getElementById('deleteBtn');
   const reportsBtn = document.getElementById('reportsBtn');
   const reportsModal = document.getElementById('reportsModal');
+  const configBtn = document.getElementById('configBtn');
+  const configModal = document.getElementById('configModal');
   
   const formatStatus = (status) => status.replace(/-/g, ' ');
   const formatCurrency = (value) => `R$ ${parseFloat(value).toFixed(2).replace('.', ',')}`;
@@ -180,6 +182,9 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUser = user;
     localStorage.setItem('habibiUser', JSON.stringify(user));
     document.getElementById('currentUserName').textContent = user.name;
+    if (user.role === 'Gestor') {
+        configBtn.classList.remove('hidden');
+    }
     userScreen.classList.add('hidden');
     app.classList.remove('hidden');
     await loadConfig();
@@ -220,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('detailsClienteNome').textContent = atendimento.clienteNome;
     document.getElementById('detailsFichaNumero').textContent = `Ficha #${String(atendimento.fichaNumero).padStart(4, '0')}`;
     
-    const [data, hora] = atendimento.agendamento.split('T');
+    const [data, hora] = (atendimento.agendamento || 'T').split('T');
     document.getElementById('detailsAgendamento').textContent = `${data.split('-').reverse().join('/')} às ${hora}`;
     
     document.getElementById('detailsBarbeiro').textContent = atendimento.barbeiroResponsavel;
@@ -232,6 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('detailsDesconto').value = atendimento.desconto || 0;
     document.getElementById('detailsObservacoes').value = atendimento.observacoes || '';
+
+    const detailsProdutosList = document.getElementById('detailsProdutosList');
+    detailsProdutosList.innerHTML = '<option value="avulso">-- Item Avulso --</option>' + configData.produtos.map(p => `<option value="${p.name}|${p.price}">${p.name} - ${formatCurrency(p.price)}</option>`).join('');
 
     produtosAdicionadosState = atendimento.produtos || [];
     renderDetailsProdutosAdicionados();
@@ -363,10 +371,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.querySelectorAll('.btn-close-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-        atendimentoModal.classList.add('hidden');
-        detailsModal.classList.add('hidden');
-        reportsModal.classList.add('hidden');
+    btn.addEventListener('click', (e) => {
+        e.target.closest('.modal').classList.add('hidden');
     });
   });
 
@@ -382,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- LÓGICA DO MODAL DE DETALHES ---
   const calculateDetailsTotal = () => {
     const id = document.getElementById('detailsAtendimentoId').value;
+    if (!id) return;
     const atendimento = allAtendimentos[id];
     const servicosTotal = atendimento.valorServicos || 0;
     const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
@@ -534,6 +541,70 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
       `;
       resultDiv.innerHTML = reportHTML;
+  });
+
+  // --- LÓGICA DE CONFIGURAÇÕES ---
+  configBtn.addEventListener('click', () => {
+      renderConfigLists();
+      configModal.classList.remove('hidden');
+      configModal.classList.add('flex');
+  });
+
+  const renderConfigLists = () => {
+      const servicosList = document.getElementById('configServicosList');
+      servicosList.innerHTML = configData.servicos.map((s, i) => `
+          <div class="flex justify-between items-center bg-gray-100 p-2 rounded">
+              <span>${s.name} - ${formatCurrency(s.price)}</span>
+              <button class="remove-servico-btn text-red-500" data-index="${i}">&times;</button>
+          </div>
+      `).join('');
+
+      const produtosList = document.getElementById('configProdutosList');
+      produtosList.innerHTML = configData.produtos.map((p, i) => `
+          <div class="flex justify-between items-center bg-gray-100 p-2 rounded">
+              <span>${p.name} - ${formatCurrency(p.price)}</span>
+              <button class="remove-produto-btn text-red-500" data-index="${i}">&times;</button>
+          </div>
+      `).join('');
+  };
+
+  document.getElementById('addServicoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('newServicoName').value;
+      const price = parseFloat(document.getElementById('newServicoPrice').value);
+      if (name && price > 0) {
+          configData.servicos.push({ name, price });
+          await db.ref('config/servicos').set(configData.servicos);
+          renderConfigLists();
+          e.target.reset();
+      }
+  });
+
+  document.getElementById('addProdutoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('newProdutoName').value;
+      const price = parseFloat(document.getElementById('newProdutoPrice').value);
+      if (name && price > 0) {
+          configData.produtos.push({ name, price });
+          await db.ref('config/produtos').set(configData.produtos);
+          renderConfigLists();
+          e.target.reset();
+      }
+  });
+
+  configModal.addEventListener('click', async (e) => {
+      if (e.target.classList.contains('remove-servico-btn')) {
+          const index = parseInt(e.target.dataset.index);
+          configData.servicos.splice(index, 1);
+          await db.ref('config/servicos').set(configData.servicos);
+          renderConfigLists();
+      }
+      if (e.target.classList.contains('remove-produto-btn')) {
+          const index = parseInt(e.target.dataset.index);
+          configData.produtos.splice(index, 1);
+          await db.ref('config/produtos').set(configData.produtos);
+          renderConfigLists();
+      }
   });
 
   checkLoggedInUser();

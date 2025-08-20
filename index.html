@@ -6,6 +6,7 @@
   <title>Dashboard - Habibi Barbearia</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Bibliotecas para Geração de PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -159,7 +160,7 @@
               <div id="timelineContainer" class="timeline mt-4 space-y-6"></div>
             </div>
           </div>
-          <div class="space-y-6">
+          <div class="space-y-6" id="actions-column">
             <div class="bg-white rounded-lg shadow p-4">
               <h3 class="section-title">Fotos (Antes/Depois)</h3>
               <div id="thumbnail-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2 mt-4"></div>

@@ -9,7 +9,6 @@ body {
   font-family: 'Playfair Display', serif;
 }
 
-/* Adicionado para o footer */
 .shadow-top {
     box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
 }
@@ -26,7 +25,7 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.vehicle-list { /* O nome da classe foi mantido para compatibilidade, mas o conteúdo é de clientes */
+.client-list { /* Nome da classe atualizado para clareza */
   flex-grow: 1; 
   transition: all 0.3s ease-in-out; 
   max-height: 1000px; 
@@ -34,13 +33,13 @@ body {
   padding: 0 8px 8px 8px;
 }
 
-.vehicle-list.collapsed { 
+.client-list.collapsed { 
   max-height: 0; 
   margin-top: 0 !important;
   padding: 0 !important;
 }
 
-.vehicle-card {
+.vehicle-card { /* O nome da classe foi mantido para compatibilidade, mas o conteúdo é de clientes */
   background: white; 
   border-radius: 8px; 
   padding: 12px; 
@@ -186,4 +185,3 @@ body {
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #e2e8f0;
 }
-

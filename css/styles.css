@@ -1,59 +1,17 @@
-/* ==================================================================
-NOVO LAYOUT DE CORES E ESTILOS GERAIS
-================================================================== */
-:root {
-    --cor-fundo: #121212;
-    --cor-superficie: #1e1e1e;
-    --cor-primaria: #D4AF37; /* Dourado */
-    --cor-destaque: #800000; /* Bordô */
-    --cor-texto-principal: #E0E0E0;
-    --cor-texto-secundario: #a0a0a0;
-    --cor-sucesso: #10b981;
-    --cor-erro: #ef4444;
-    --cor-info: #3b82f6;
-}
-
+/* =============== FONTES E ESTILOS GERAIS =============== */
 body { 
   font-family: 'Roboto', sans-serif; 
-  background-color: var(--cor-fundo);
-  color: var(--cor-texto-principal);
+  background-color: #fdfaf6; /* Um branco mais quente */
   overflow-x: hidden;
 }
-
 .font-serif {
   font-family: 'Playfair Display', serif;
 }
-
-/* ==================================================================
-COMPONENTES PRINCIPAIS (HEADER, FOOTER, KANBAN)
-================================================================== */
-#userScreen .bg-white, #app .bg-white {
-    background-color: var(--cor-superficie);
-}
-#userScreen .text-stone-800, #app .text-stone-800 {
-    color: var(--cor-primaria);
-}
-#userScreen .text-gray-500, #app .text-gray-500 {
-    color: var(--cor-texto-secundario);
-}
-#userScreen .bg-gray-100 {
-    background-color: #2a2a2a;
-}
-#userScreen .text-gray-700 {
-    color: var(--cor-texto-principal);
+.shadow-top {
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
 }
 
-header, footer {
-    background-color: var(--cor-superficie);
-    border-color: var(--cor-primaria);
-}
-header h1, footer p {
-    color: var(--cor-texto-principal);
-}
-footer strong {
-    color: var(--cor-primaria);
-}
-
+/* =============== LAYOUT DO KANBAN RESPONSIVO =============== */
 .kanban-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -67,14 +25,13 @@ footer strong {
         scroll-snap-type: x mandatory;
     }
 }
-
 .status-column { 
-  background: var(--cor-superficie);
+  background: #f3f4f6; /* Cinza claro */
   border-radius: 12px; 
   display: flex; 
   flex-direction: column; 
   min-height: 100px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 @media (max-width: 1024px) {
     .status-column {
@@ -82,23 +39,17 @@ footer strong {
         scroll-snap-align: start;
     }
 }
-.status-column h3 {
-    color: var(--cor-primaria);
-    font-weight: 700;
-}
-
 .client-list {
   flex-grow: 1; 
-  overflow-y: auto;
+  overflow-y: auto; 
   padding: 0 8px 8px 8px;
 }
-
 .vehicle-card {
-  background: #2a2a2a; 
+  background: white; 
   border-radius: 8px; 
   padding: 12px; 
   margin-bottom: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   transition: all 0.2s ease-in-out; 
   border-left: 5px solid;
   cursor: pointer;
@@ -106,71 +57,50 @@ footer strong {
 }
 .vehicle-card:hover { 
   transform: translateY(-3px); 
-  box-shadow: 0 8px 12px rgba(0,0,0,0.3); 
+  box-shadow: 0 8px 12px rgba(0,0,0,0.1); 
+  z-index: 10;
 }
-.vehicle-card p { color: var(--cor-texto-principal); }
-.vehicle-card .text-gray-600, .vehicle-card .text-gray-500 { color: var(--cor-texto-secundario); }
-.vehicle-card .text-amber-800 { color: var(--cor-primaria); }
-.vehicle-card .text-green-700 { color: var(--cor-sucesso); }
+.vehicle-card.status-Aguardando { border-left-color: #f59e0b; } /* Ambar */
+.vehicle-card.status-Em-Atendimento { border-left-color: #3b82f6; } /* Azul */
+.vehicle-card.status-Aguardando-Pagamento { border-left-color: #10b981; } /* Verde */
+.vehicle-card.status-Finalizado { border-left-color: #6b7280; opacity: 0.9; } /* Cinza */
 
-.vehicle-card.status-Aguardando { border-left-color: #f59e0b; }
-.vehicle-card.status-Em-Atendimento { border-left-color: var(--cor-info); }
-.vehicle-card.status-Aguardando-Pagamento { border-left-color: var(--cor-sucesso); }
-.vehicle-card.status-Finalizado { border-left-color: #6b7280; opacity: 0.8; }
-
-/* ==================================================================
-MODAIS
-================================================================== */
+/* =============== MODAIS =============== */
 .modal { 
-  background: rgba(0, 0, 0, 0.7); 
+  background: rgba(0, 0, 0, 0.6); 
   backdrop-filter: blur(5px); 
   z-index: 50;
 }
 .modal-content { 
-  background: var(--cor-superficie); 
+  background: #f8fafc; 
   border-radius: 16px; 
   max-height: 90vh; 
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  color: var(--cor-texto-principal);
-  border: 1px solid #444;
 }
-.modal-header, .modal-footer {
-  background: #121212;
-  border-color: #333;
+.modal-header {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.5rem;
+  position: relative;
   flex-shrink: 0;
 }
-.modal-header h2, .modal-header p { color: var(--cor-primaria); }
 .modal-body {
   overflow-y: auto;
   flex-grow: 1;
   padding: 1.5rem;
 }
-.modal-body .bg-white { background-color: #2a2a2a; }
-.modal-body .text-gray-800 { color: var(--cor-texto-principal); }
-.modal-body .text-gray-500 { color: var(--cor-texto-secundario); }
-.modal-body .border, .modal-body .border-t { border-color: #444; }
-.modal-body .bg-gray-50, .modal-body .bg-gray-100 { background-color: #333; }
-.modal-body .text-green-700 { color: var(--cor-sucesso); }
-.modal-body .text-red-600 { color: var(--cor-erro); }
-
-/* ==================================================================
-FORMULÁRIOS E BOTÕES
-================================================================== */
-.form-group label, .form-medium { color: var(--cor-primaria); }
-input, select, textarea {
-    background-color: #333;
-    border: 1px solid #555;
-    color: var(--cor-texto-principal);
-    border-radius: 6px;
-}
-input:focus, select:focus, textarea:focus {
-    border-color: var(--cor-primaria);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.5);
+.modal-footer {
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
+/* =============== BOTÕES =============== */
 .btn { 
   transition: all 0.2s ease; 
   border-radius: 8px; 
@@ -180,48 +110,32 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: none;
 }
 .btn:hover { 
   transform: translateY(-2px); 
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
-.btn.bg-amber-800 { background-color: var(--cor-destaque); }
-.btn.bg-amber-800:hover { background-color: #a00000; }
-.btn.bg-stone-600 { background-color: #4a4a4a; }
-.btn.bg-stone-600:hover { background-color: #666; }
-.btn.bg-gray-200 { background-color: #555; color: white; }
-.btn.bg-gray-200:hover { background-color: #777; }
-.btn.bg-green-600 { background-color: var(--cor-sucesso); }
-.btn.bg-green-600:hover { background-color: #0f996a; }
-.btn.bg-blue-600 { background-color: var(--cor-info); }
-.btn.bg-blue-600:hover { background-color: #2a71e0; }
-.btn.bg-red-600 { background-color: var(--cor-erro); }
-.btn.bg-red-600:hover { background-color: #d03a3a; }
 
-/* ==================================================================
-TIMELINE E NOTIFICAÇÕES
-================================================================== */
-.timeline { border-left: 3px solid #444; }
-.timeline-icon {
-  background-color: var(--cor-superficie); 
-  border: 3px solid;
-}
-.timeline-item-log .timeline-icon { border-color: var(--cor-info); color: var(--cor-info); }
-.timeline-item-status .timeline-icon { border-color: var(--cor-sucesso); color: var(--cor-sucesso); }
-.timeline-item .bg-gray-50 { background-color: #2a2a2a; }
-
+/* =============== NOTIFICAÇÕES =============== */
 .notification {
-  position: fixed; top: 20px; right: 20px; padding: 12px 20px;
-  border-radius: 8px; color: white; font-weight: 500; z-index: 9999;
-  transform: translateX(120%); transition: transform 0.3s ease; max-width: 300px;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  z-index: 9999;
+  transform: translateX(120%);
+  transition: transform 0.3s ease;
+  max-width: 300px;
 }
-.notification.show { transform: translateX(0); }
-.notification.success { background-color: var(--cor-sucesso); }
-.notification.error { background-color: var(--cor-erro); }
-
-@media print {
-    .no-print { display: none !important; }
-    .modal-body { overflow: visible; }
-    .modal-content { box-shadow: none; border: 1px solid #ccc; }
+.notification.show {
+  transform: translateX(0);
+}
+.notification.success {
+  background-color: #10b981;
+}
+.notification.error {
+  background-color: #ef4444;
 }

@@ -1,178 +1,183 @@
-/* --- GERAL E PALETA DE CORES --- */
+/* --- FONTES E VARIÁVEIS DE COR --- */
 :root {
     --cor-fundo: #121212;
     --cor-card: #1E1E1E;
-    --cor-texto: #E0E0E0;
-    --cor-titulo: #FFFFFF;
-    --cor-primaria: #D4AF37;
-    --cor-destaque: #800000;
-    --fonte-titulo: 'Playfair Display', serif;
+    --cor-texto-principal: #E0E0E0;
+    --cor-texto-secundario: #a0a0a0;
+    --cor-primaria: #D4AF37; /* Dourado */
+    --cor-destaque: #800000; /* Bordô */
     --fonte-corpo: 'Roboto', sans-serif;
+    --fonte-titulo: 'Playfair Display', serif;
 }
 
 body {
-    font-family: var(--fonte-corpo);
     background-color: var(--cor-fundo);
-    color: var(--cor-texto);
-    margin: 0;
-    padding: 0;
-    line-height: 1.6;
+    color: var(--cor-texto-principal);
+    font-family: var(--fonte-corpo);
 }
 
-.container {
-    max-width: 1100px;
-    margin: 20px auto;
-    padding: 0 20px;
-    display: flex;
-    flex-direction: column; /* Alinhado em coluna para melhor organização */
-    align-items: center;
-    gap: 20px;
-}
-
-/* --- CABEÇALHO E RODAPÉ --- */
-.header, .footer {
-    background-color: var(--cor-card);
-    color: var(--cor-primaria);
-    text-align: center;
-    padding: 20px 10px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.header {
-    border-bottom: 3px solid var(--cor-primaria);
-}
-
-.header h1 {
+.font-playfair {
     font-family: var(--fonte-titulo);
-    margin: 0;
-    font-size: 2.5rem;
 }
 
-.footer {
-    border-top: 3px solid var(--cor-primaria);
-    margin-top: 30px;
-    font-size: 0.9rem;
-}
-
-/* --- CARDS DE CONTEÚDO --- */
-.card {
+/* --- COMPONENTES PRINCIPAIS --- */
+.header-main {
     background-color: var(--cor-card);
-    border: 1px solid #333;
+    border-bottom: 2px solid var(--cor-primaria);
+}
+
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+    min-height: calc(100vh - 80px);
+    align-items: start;
+}
+
+.status-column {
+    background-color: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    padding: 25px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    width: 100%;
-    max-width: 600px; /* Limita a largura do card principal */
-    box-sizing: border-box;
+    padding: 1rem;
+    height: 100%;
 }
 
-.card h2 {
-    font-family: var(--fonte-titulo);
+.status-column h3 {
     color: var(--cor-primaria);
-    margin-top: 0;
-    border-bottom: 1px solid var(--cor-primaria);
-    padding-bottom: 10px;
+    font-family: var(--fonte-titulo);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-/* --- ELEMENTOS DE FORMULÁRIO --- */
-.form-group {
-    margin-bottom: 20px;
+.client-list {
+    min-height: 100px;
 }
 
+.vehicle-card {
+    background-color: var(--cor-card);
+    border-left: 4px solid var(--cor-primaria);
+    border-radius: 4px;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: grab;
+}
+
+.vehicle-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+/* --- BOTÕES --- */
+.btn-primary {
+    background-color: var(--cor-destaque);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease;
+}
+.btn-primary:hover {
+    background-color: #A00000;
+}
+
+.btn-secondary {
+    background-color: #4a4a4a;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+.btn-secondary:hover {
+    background-color: #666666;
+}
+
+/* --- MODAL --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+.modal-overlay.active {
+    display: flex;
+}
+.modal-content {
+    background-color: var(--cor-card);
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* --- FORMULÁRIO --- */
 .form-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
     font-weight: bold;
+    color: var(--cor-primaria);
 }
-
-input[type="text"],
-input[type="date"],
-input[type="number"],
-select {
+.form-group input, .form-group select {
     width: 100%;
-    padding: 12px;
+    padding: 0.75rem;
     border-radius: 5px;
     border: 1px solid #555;
     background-color: #333;
-    color: var(--cor-texto);
-    box-sizing: border-box;
-    font-size: 1rem;
+    color: var(--cor-texto-principal);
 }
 
-/* --- ESTILOS PARA CHECKBOXES (NOVO) --- */
 .service-options {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
 }
-
 .checkbox-group {
     display: flex;
     align-items: center;
 }
-
 .checkbox-group input[type="checkbox"] {
     width: auto;
     margin-right: 10px;
-    transform: scale(1.2); /* Deixa o checkbox um pouco maior */
+    transform: scale(1.2);
     accent-color: var(--cor-primaria);
 }
 
-.checkbox-group label {
-    margin-bottom: 0;
-    font-weight: normal;
-}
-
-/* --- ESTILO PARA O TOTAL (NOVO) --- */
 .total-display {
-    margin-top: 20px;
-    padding: 15px;
+    margin-top: 1.5rem;
+    padding: 1rem;
     background-color: #111;
     border-left: 4px solid var(--cor-primaria);
     text-align: center;
 }
-
 .total-display h3 {
     margin: 0;
-    color: var(--cor-titulo);
+    color: white;
     font-size: 1.4rem;
 }
-
 #total-value {
     color: var(--cor-primaria);
     font-weight: bold;
 }
 
-.btn {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    margin-top: 20px;
-    background-color: var(--cor-destaque);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.btn:hover {
-    background-color: #A00000;
-}
-
-/* --- REGRAS DE RESPONSIVIDADE PARA CELULAR --- */
+/* --- RESPONSIVIDADE --- */
 @media (max-width: 768px) {
-    .header h1 {
-        font-size: 2rem;
+    .kanban-board {
+        grid-template-columns: 1fr;
     }
-    .container {
-        padding: 0 15px;
+    .header-main {
+        flex-direction: column;
+        gap: 1rem;
     }
-    .total-display h3 {
-        font-size: 1.2rem;
+    .service-options {
+        grid-template-columns: 1fr;
     }
 }

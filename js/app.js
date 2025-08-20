@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const atendimentoModal = document.getElementById('atendimentoModal');
   const atendimentoForm = document.getElementById('atendimentoForm');
   const detailsModal = document.getElementById('detailsModal');
+  const detailsForm = document.getElementById('detailsForm');
   const deleteBtn = document.getElementById('deleteBtn');
   const reportsBtn = document.getElementById('reportsBtn');
   const reportsModal = document.getElementById('reportsModal');
@@ -214,25 +215,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const openDetailsModal = (id) => {
     const atendimento = allAtendimentos[id];
     if (!atendimento) return;
+
+    document.getElementById('detailsAtendimentoId').value = id;
     document.getElementById('detailsClienteNome').textContent = atendimento.clienteNome;
     document.getElementById('detailsFichaNumero').textContent = `Ficha #${String(atendimento.fichaNumero).padStart(4, '0')}`;
-    document.getElementById('detailsServicos').textContent = atendimento.servicos.join(', ');
-    document.getElementById('detailsBarbeiro').textContent = atendimento.barbeiroResponsavel;
-    document.getElementById('detailsProdutos').textContent = atendimento.produtos?.map(p => p.name).join(', ') || 'Nenhum';
-    document.getElementById('detailsPagamento').textContent = atendimento.formaPagamento;
-    const subtotal = (atendimento.valorServicos || 0) + (atendimento.valorProdutos || 0);
-    document.getElementById('detailsSubtotal').textContent = formatCurrency(subtotal);
-    document.getElementById('detailsDesconto').textContent = `- ${formatCurrency(atendimento.desconto)}`;
-    document.getElementById('detailsValorFinal').textContent = formatCurrency(atendimento.valorTotal);
     
+    const [data, hora] = atendimento.agendamento.split('T');
+    document.getElementById('detailsAgendamento').textContent = `${data.split('-').reverse().join('/')} às ${hora}`;
+    
+    document.getElementById('detailsBarbeiro').textContent = atendimento.barbeiroResponsavel;
+    document.getElementById('detailsServicos').textContent = atendimento.servicos.join(', ');
+    document.getElementById('detailsProdutos').textContent = atendimento.produtos?.map(p => p.name).join(', ') || 'Nenhum';
+    
+    const formaPagamentoSelect = document.getElementById('detailsFormaPagamento');
+    formaPagamentoSelect.innerHTML = FORMAS_PAGAMENTO.map(f => `<option value="${f}" ${f === atendimento.formaPagamento ? 'selected' : ''}>${f}</option>`).join('');
+    
+    document.getElementById('detailsDesconto').value = atendimento.desconto || 0;
+    document.getElementById('detailsObservacoes').value = atendimento.observacoes || '';
+
+    produtosAdicionadosState = atendimento.produtos || [];
+    renderDetailsProdutosAdicionados();
+    calculateDetailsTotal();
+
     if (currentUser.role === 'Gestor' || currentUser.role === 'Recepcionista') {
         deleteBtn.classList.remove('hidden');
     } else {
         deleteBtn.classList.add('hidden');
     }
     deleteBtn.dataset.id = id;
-    document.getElementById('exportPdfBtn').dataset.id = id;
-
+    
     renderTimeline(atendimento);
     
     const actionsColumn = document.getElementById('actions-column');
@@ -288,10 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   addAtendimentoBtn.addEventListener('click', () => {
     atendimentoForm.reset();
-    produtosAdicionadosState = [];
-    document.getElementById('produtosAdicionados').innerHTML = '';
     document.getElementById('atendimentoId').value = '';
-    document.getElementById('atendimentoModalTitle').textContent = 'Nova Ficha de Atendimento';
+    document.getElementById('atendimentoModalTitle').textContent = 'Agendar Novo Atendimento';
     
     const barbeiroSelect = document.getElementById('barbeiroResponsavel');
     const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Gestor');
@@ -304,79 +313,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="text-sm">${s.name} (${formatCurrency(s.price)})</span>
         </label>
     `).join('');
-
-    const produtosList = document.getElementById('produtosList');
-    produtosList.innerHTML = '<option value="avulso">-- Item Avulso --</option>' + configData.produtos.map(p => `<option value="${p.name}|${p.price}">${p.name} - ${formatCurrency(p.price)}</option>`).join('');
     
-    const formaPagamento = document.getElementById('formaPagamento');
-    formaPagamento.innerHTML = FORMAS_PAGAMENTO.map(f => `<option value="${f}">${f}</option>`).join('');
-
-    calculateTotal();
-    
-    document.getElementById('fichaNumeroDisplay').textContent = `Aguardando...`;
+    document.getElementById('fichaNumeroDisplay').textContent = '';
     atendimentoModal.classList.remove('hidden');
     atendimentoModal.classList.add('flex');
-  });
-
-  const calculateTotal = () => {
-    let servicosTotal = 0;
-    document.querySelectorAll('#servicosList input:checked').forEach(input => servicosTotal += parseFloat(input.value));
-    const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
-    const desconto = parseFloat(document.getElementById('desconto').value) || 0;
-    
-    document.getElementById('valorServicosDisplay').textContent = formatCurrency(servicosTotal);
-    document.getElementById('valorProdutosDisplay').textContent = formatCurrency(produtosTotal);
-    document.getElementById('valorTotalDisplay').textContent = formatCurrency(servicosTotal + produtosTotal - desconto);
-  };
-  atendimentoModal.addEventListener('change', calculateTotal);
-  atendimentoModal.addEventListener('input', calculateTotal);
-  
-  document.getElementById('addProdutoBtn').addEventListener('click', () => {
-      const select = document.getElementById('produtosList');
-      if (select.value === 'avulso') {
-          document.getElementById('produtoAvulsoContainer').classList.remove('hidden');
-          return;
-      }
-      document.getElementById('produtoAvulsoContainer').classList.add('hidden');
-      const [name, price] = select.value.split('|');
-      produtosAdicionadosState.push({ name, price: parseFloat(price) });
-      renderProdutosAdicionados();
-      calculateTotal();
-  });
-
-  document.getElementById('addProdutoAvulsoBtn').addEventListener('click', () => {
-      const name = document.getElementById('produtoAvulsoNome').value;
-      const price = parseFloat(document.getElementById('produtoAvulsoPreco').value);
-      if (name && price > 0) {
-          produtosAdicionadosState.push({ name, price });
-          renderProdutosAdicionados();
-          calculateTotal();
-          document.getElementById('produtoAvulsoNome').value = '';
-          document.getElementById('produtoAvulsoPreco').value = '';
-          document.getElementById('produtoAvulsoContainer').classList.add('hidden');
-          document.getElementById('produtosList').value = 'avulso';
-      } else {
-          showNotification('Preencha o nome e o preço do item avulso.', 'error');
-      }
-  });
-
-  const renderProdutosAdicionados = () => {
-      const container = document.getElementById('produtosAdicionados');
-      container.innerHTML = produtosAdicionadosState.map((p, index) => `
-        <div class="flex justify-between items-center bg-gray-100 p-1 rounded">
-            <span class="text-sm">${p.name} - ${formatCurrency(p.price)}</span>
-            <button type="button" class="remove-produto-btn text-red-500" data-index="${index}">&times;</button>
-        </div>
-      `).join('');
-  };
-
-  document.getElementById('produtosAdicionados').addEventListener('click', (e) => {
-      if (e.target.classList.contains('remove-produto-btn')) {
-          const index = parseInt(e.target.dataset.index);
-          produtosAdicionadosState.splice(index, 1);
-          renderProdutosAdicionados();
-          calculateTotal();
-      }
   });
 
   atendimentoForm.addEventListener('submit', async (e) => {
@@ -390,21 +330,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const fichaNumero = snapshot.val();
 
     const servicosTotal = Array.from(document.querySelectorAll('#servicosList input:checked')).reduce((sum, i) => sum + parseFloat(i.value), 0);
-    const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
-    const desconto = parseFloat(document.getElementById('desconto').value) || 0;
 
     const atendimentoData = {
       fichaNumero,
       clienteNome: document.getElementById('clienteNome').value,
       agendamento: `${document.getElementById('agendamentoData').value}T${document.getElementById('agendamentoHora').value}`,
       servicos: selectedServicos,
-      produtos: produtosAdicionadosState,
+      produtos: [],
       barbeiroResponsavel: document.getElementById('barbeiroResponsavel').value,
-      formaPagamento: document.getElementById('formaPagamento').value,
+      formaPagamento: FORMAS_PAGAMENTO[0],
       valorServicos: servicosTotal,
-      valorProdutos: produtosTotal,
-      desconto: desconto,
-      valorTotal: servicosTotal + produtosTotal - desconto,
+      valorProdutos: 0,
+      desconto: 0,
+      valorTotal: servicosTotal,
       status: 'Aguardando',
       createdAt: new Date().toISOString(),
     };
@@ -441,18 +379,82 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  document.getElementById('exportPdfBtn').addEventListener('click', (e) => {
-      const id = e.target.dataset.id;
-      const fichaElement = document.getElementById('ficha-para-imprimir');
-      const { jsPDF } = window.jspdf;
-      html2canvas(fichaElement, { scale: 2 }).then(canvas => {
-          const imgData = canvas.toDataURL('image/png');
-          const pdf = new jsPDF('p', 'mm', 'a4');
-          const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-          pdf.save(`Ficha_${allAtendimentos[id].fichaNumero}_${allAtendimentos[id].clienteNome}.pdf`);
-      });
+  // --- LÓGICA DO MODAL DE DETALHES ---
+  const calculateDetailsTotal = () => {
+    const id = document.getElementById('detailsAtendimentoId').value;
+    const atendimento = allAtendimentos[id];
+    const servicosTotal = atendimento.valorServicos || 0;
+    const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
+    const desconto = parseFloat(document.getElementById('detailsDesconto').value) || 0;
+    document.getElementById('detailsValorTotalDisplay').textContent = formatCurrency(servicosTotal + produtosTotal - desconto);
+  };
+  detailsModal.addEventListener('input', calculateDetailsTotal);
+
+  const renderDetailsProdutosAdicionados = () => {
+      const container = document.getElementById('detailsProdutosAdicionados');
+      container.innerHTML = produtosAdicionadosState.map((p, index) => `
+        <div class="flex justify-between items-center bg-gray-100 p-1 rounded">
+            <span class="text-sm">${p.name} - ${formatCurrency(p.price)}</span>
+            <button type="button" class="remove-produto-btn text-red-500" data-index="${index}">&times;</button>
+        </div>
+      `).join('');
+  };
+
+  detailsModal.addEventListener('click', (e) => {
+      if (e.target.id === 'detailsAddProdutoBtn') {
+          const select = document.getElementById('detailsProdutosList');
+          if (select.value === 'avulso') {
+              document.getElementById('detailsProdutoAvulsoContainer').classList.remove('hidden');
+              return;
+          }
+          document.getElementById('detailsProdutoAvulsoContainer').classList.add('hidden');
+          const [name, price] = select.value.split('|');
+          produtosAdicionadosState.push({ name, price: parseFloat(price) });
+          renderDetailsProdutosAdicionados();
+          calculateDetailsTotal();
+      }
+      if (e.target.id === 'detailsAddProdutoAvulsoBtn') {
+          const name = document.getElementById('detailsProdutoAvulsoNome').value;
+          const price = parseFloat(document.getElementById('detailsProdutoAvulsoPreco').value);
+          if (name && price > 0) {
+              produtosAdicionadosState.push({ name, price });
+              renderDetailsProdutosAdicionados();
+              calculateDetailsTotal();
+              document.getElementById('detailsProdutoAvulsoNome').value = '';
+              document.getElementById('detailsProdutoAvulsoPreco').value = '';
+              document.getElementById('detailsProdutoAvulsoContainer').classList.add('hidden');
+              document.getElementById('detailsProdutosList').value = 'avulso';
+          }
+      }
+      if (e.target.classList.contains('remove-produto-btn')) {
+          const index = parseInt(e.target.dataset.index);
+          produtosAdicionadosState.splice(index, 1);
+          renderDetailsProdutosAdicionados();
+          calculateDetailsTotal();
+      }
+  });
+
+  detailsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('detailsAtendimentoId').value;
+      const atendimento = allAtendimentos[id];
+      
+      const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
+      const desconto = parseFloat(document.getElementById('detailsDesconto').value) || 0;
+      
+      const updates = {
+          produtos: produtosAdicionadosState,
+          formaPagamento: document.getElementById('detailsFormaPagamento').value,
+          desconto: desconto,
+          observacoes: document.getElementById('detailsObservacoes').value,
+          valorProdutos: produtosTotal,
+          valorTotal: atendimento.valorServicos + produtosTotal - desconto,
+          lastUpdate: new Date().toISOString()
+      };
+
+      await db.ref(`atendimentos/${id}`).update(updates);
+      showNotification('Ficha atualizada com sucesso!', 'success');
+      detailsModal.classList.add('hidden');
   });
 
   // --- LÓGICA DE RELATÓRIOS ---
@@ -489,10 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const totalFaturado = filtered.reduce((sum, a) => sum + a.valorTotal, 0);
       const totalClientes = filtered.length;
-      const servicosCount = filtered.flatMap(a => a.servicos).reduce((acc, s) => {
-          acc[s] = (acc[s] || 0) + 1;
-          return acc;
-      }, {});
       
       const atendimentosPorBarbeiro = filtered.reduce((acc, a) => {
           const barbeiro = a.barbeiroResponsavel;

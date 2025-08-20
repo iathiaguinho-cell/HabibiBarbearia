@@ -46,4 +46,18 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // --- DADOS DA BARBEARIA ---
   const USERS = [
-    { name: 'Habibi', role: 'Gestor' },
+    { name: 'Habibi', role: 'Gestor' }, 
+    { name: 'Júnior', role: 'Barbeiro' }, 
+    { name: 'Willian', role: 'Barbeiro' },
+    { name: 'Recepção', role: 'Recepcionista' }
+  ];
+  
+  const FORMAS_PAGAMENTO = ['Dinheiro', 'PIX', 'Cartão de Débito', 'Cartão de Crédito'];
+  const STATUS_LIST = ['Aguardando', 'Em-Atendimento', 'Aguardando-Pagamento', 'Finalizado'];
+  
+  // --- ELEMENTOS DA UI ---
+  const userScreen = document.getElementById('userScreen');
+  const app = document.getElementById('app');
+  const userList = document.getElementById('userList');
+  const kanbanBoard = document.getElementById('kanbanBoard');
+  const

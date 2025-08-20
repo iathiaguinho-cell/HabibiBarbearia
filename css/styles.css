@@ -1,201 +1,262 @@
-/* =============== FONTES E ESTILOS GERAIS =============== */
-body { 
-  font-family: 'Roboto', sans-serif; 
-  background-color: #fdfaf6; /* Um branco mais quente */
-  overflow-x: hidden;
-}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - Habibi Barbearia</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-.font-serif {
-  font-family: 'Playfair Display', serif;
-}
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gray-100">
+  <!-- TELA DE LOGIN POR USUÁRIO -->
+  <div id="userScreen" class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
+      <h1 class="text-4xl font-bold text-gray-800 font-serif">Habibi Barbearia</h1>
+      <p class="text-gray-500 my-8">Selecione seu perfil para iniciar</p>
+      <div id="userList" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+    </div>
+  </div>
 
-.shadow-top {
-    box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
-}
+  <!-- APP PRINCIPAL -->
+  <div id="app" class="hidden flex flex-col min-h-screen">
+    <header class="bg-white shadow-md sticky top-0 z-40">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800 font-serif">Habibi Barbearia</h1>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <button id="configBtn" class="btn bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 flex items-center gap-2 hidden">
+            <i class='bx bx-cog'></i><span class="hidden sm:inline">Configurações</span>
+          </button>
+          <button id="reportsBtn" class="btn bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 flex items-center gap-2">
+            <i class='bx bxs-report'></i><span class="hidden sm:inline">Relatórios</span>
+          </button>
+          <button id="addAtendimentoBtn" class="btn bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 flex items-center gap-2">
+            <i class='bx bx-plus-circle'></i><span class="hidden sm:inline">Nova Ficha</span>
+          </button>
+          <div class="text-right">
+            <p id="currentUserName" class="font-semibold text-gray-700"></p>
+            <button id="logoutButton" class="text-sm text-red-500 hover:text-red-700">Sair</button>
+          </div>
+        </div>
+      </div>
+    </header>
 
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="kanbanBoard"></div>
+    </main>
 
-/* =============== LAYOUT DO KANBAN =============== */
-.status-column { 
-  background: #f3f4f6; /* Cinza claro */
-  border-radius: 12px; 
-  display: flex; 
-  flex-direction: column; 
-  transition: all 0.3s ease; 
-  min-height: 100px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
+    <footer class="bg-white shadow-top mt-8 py-4">
+        <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
+            <p><strong>Endereço:</strong> R. São Paulo, 856 - Jardim America, São José do Rio Preto - SP</p>
+            <p><strong>Telefone:</strong> (17) 98155-3982 | <strong>Horário:</strong> Terça a Sábado, das 10h às 19h</p>
+        </div>
+    </footer>
+  </div>
 
-.client-list { /* Nome da classe atualizado para clareza */
-  flex-grow: 1; 
-  transition: all 0.3s ease-in-out; 
-  max-height: 1000px; 
-  overflow: hidden;
-  padding: 0 8px 8px 8px;
-}
+  <!-- MODAL PARA AGENDAR (NOVA FICHA) -->
+  <div id="atendimentoModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="modal-content w-full max-w-xl">
+      <div class="modal-header flex justify-between items-center">
+        <h2 id="atendimentoModalTitle" class="text-2xl font-bold text-gray-800">Agendar Novo Atendimento</h2>
+      </div>
+      <div class="modal-body">
+        <form id="atendimentoForm" class="space-y-4">
+          <input type="hidden" id="atendimentoId">
+          <div class="form-group">
+            <label for="clienteNome" class="block text-sm font-medium">Nome do Cliente</label>
+            <input id="clienteNome" type="text" placeholder="Nome completo" required class="p-2 border rounded w-full">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+              <div class="form-group">
+                  <label for="agendamentoData" class="block text-sm font-medium">Data</label>
+                  <input id="agendamentoData" type="date" required class="p-2 border rounded w-full">
+              </div>
+              <div class="form-group">
+                  <label for="agendamentoHora" class="block text-sm font-medium">Hora</label>
+                  <input id="agendamentoHora" type="time" required class="p-2 border rounded w-full">
+              </div>
+          </div>
+          <div class="form-group">
+            <label for="barbeiroResponsavel" class="block text-sm font-medium">Barbeiro</label>
+            <select id="barbeiroResponsavel" required class="p-2 border rounded w-full"></select>
+          </div>
+          <div class="form-group">
+            <label class="block text-sm font-medium">Serviços Agendados</label>
+            <div id="servicosList" class="grid grid-cols-2 gap-2 p-2 border rounded-md bg-gray-50 max-h-40 overflow-y-auto"></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-close-modal btn bg-gray-200 hover:bg-gray-300 text-gray-800">Cancelar</button>
+        <button type="submit" form="atendimentoForm" class="btn bg-amber-800 hover:bg-amber-900 text-white">Salvar Agendamento</button>
+      </div>
+    </div>
+  </div>
 
-.client-list.collapsed { 
-  max-height: 0; 
-  margin-top: 0 !important;
-  padding: 0 !important;
-}
+  <!-- MODAL DE DETALHES E GERENCIAMENTO DO ATENDIMENTO -->
+  <div id="detailsModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="modal-content w-full max-w-4xl">
+      <div id="ficha-para-imprimir" class="p-6">
+        <div class="modal-header">
+          <div class="flex justify-between items-start w-full">
+            <div>
+              <h2 id="detailsClienteNome" class="text-2xl font-bold text-gray-800"></h2>
+              <p id="detailsFichaNumero" class="text-sm font-bold text-amber-800"></p>
+            </div>
+            <button class="btn-close-modal text-3xl text-gray-400 hover:text-gray-600 no-print">&times;</button>
+          </div>
+        </div>
+        <div class="modal-body">
+          <form id="detailsForm" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <input type="hidden" id="detailsAtendimentoId">
+            <!-- Coluna Esquerda: Resumo e Histórico -->
+            <div class="space-y-6">
+              <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="section-title">Resumo da Ficha</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                  <div><strong class="block text-gray-500">Agendamento:</strong> <span id="detailsAgendamento"></span></div>
+                  <div><strong class="block text-gray-500">Barbeiro:</strong> <span id="detailsBarbeiro"></span></div>
+                  <div><strong class="block text-gray-500">Serviços:</strong> <span id="detailsServicos"></span></div>
+                  <div><strong class="block text-gray-500">Produtos:</strong> <span id="detailsProdutos"></span></div>
+                  <div class="col-span-2 border-t mt-2 pt-2 grid grid-cols-3">
+                      <div class="text-center"><strong class="block text-gray-500">Subtotal</strong> <span id="detailsSubtotal" class="font-bold"></span></div>
+                      <div class="text-center"><strong class="block text-gray-500">Desconto</strong> <span id="detailsDesconto" class="font-bold text-red-600"></span></div>
+                      <div class="text-center"><strong class="block text-gray-500 text-lg">Valor Final</strong> <span id="detailsValorFinal" class="text-lg font-bold text-green-700"></span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="section-title">Histórico</h3>
+                <div id="timelineContainer" class="timeline mt-4 space-y-6"></div>
+              </div>
+            </div>
+            <!-- Coluna Direita: Ações e Fechamento -->
+            <div class="space-y-6" id="actions-column">
+               <div class="bg-white rounded-lg shadow p-4">
+                  <h3 class="section-title">Produtos e Consumo</h3>
+                  <div class="flex gap-2">
+                    <select id="detailsProdutosList" class="p-2 border rounded w-full"></select>
+                    <button type="button" id="detailsAddProdutoBtn" class="btn bg-gray-700 text-white px-3">Add</button>
+                  </div>
+                  <div id="detailsProdutosAdicionados" class="mt-2 space-y-1"></div>
+                  <div id="detailsProdutoAvulsoContainer" class="hidden mt-2 space-y-2 border-t pt-2">
+                      <input type="text" id="detailsProdutoAvulsoNome" placeholder="Nome do item" class="p-2 border rounded w-full">
+                      <input type="number" id="detailsProdutoAvulsoPreco" placeholder="Preço (R$)" class="p-2 border rounded w-full">
+                      <button type="button" id="detailsAddProdutoAvulsoBtn" class="btn bg-blue-600 text-white w-full">Adicionar Item</button>
+                  </div>
+               </div>
+               <div class="bg-white rounded-lg shadow p-4">
+                  <h3 class="section-title">Fechamento e Observações</h3>
+                  <div class="form-group">
+                      <label for="detailsFormaPagamento" class="block text-sm font-medium">Forma de Pagamento</label>
+                      <select id="detailsFormaPagamento" class="p-2 border rounded w-full"></select>
+                  </div>
+                  <div class="form-group mt-2">
+                      <label for="detailsDesconto" class="block text-sm font-medium">Desconto (R$)</label>
+                      <input id="detailsDesconto" type="number" step="0.01" value="0" class="p-2 border rounded w-full">
+                  </div>
+                  <div class="form-group mt-2">
+                      <label for="detailsObservacoes" class="block text-sm font-medium">Observações</label>
+                      <textarea id="detailsObservacoes" rows="2" class="p-2 border rounded w-full" placeholder="Cliente chegou atrasado, etc..."></textarea>
+                  </div>
+                  <div class="text-center bg-gray-100 p-2 rounded-lg mt-4">
+                    <p class="text-gray-600 font-bold">VALOR FINAL</p>
+                    <p id="detailsValorTotalDisplay" class="font-bold text-3xl text-green-700">R$ 0,00</p>
+                  </div>
+               </div>
+               <div class="bg-white rounded-lg shadow p-4 space-y-3 no-print">
+                  <button type="submit" form="detailsForm" class="w-full btn bg-green-600 hover:bg-green-700 text-white">
+                    <i class='bx bx-save'></i> Salvar Alterações
+                  </button>
+                  <button type="button" id="exportPdfBtn" class="w-full btn bg-gray-700 hover:bg-gray-800 text-white">
+                    <i class='bx bxs-file-pdf'></i> Exportar Ficha em PDF
+                  </button>
+                  <button id="deleteBtn" class="w-full btn bg-red-600 hover:bg-red-700 text-white hidden">
+                    <i class='bx bx-trash'></i> Excluir Ficha
+                  </button>
+               </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
-.vehicle-card { /* O nome da classe foi mantido para compatibilidade, mas o conteúdo é de clientes */
-  background: white; 
-  border-radius: 8px; 
-  padding: 12px; 
-  margin-bottom: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  transition: all 0.2s ease-in-out; 
-  border-left: 5px solid;
-  cursor: pointer;
-  position: relative;
-}
+  <!-- MODAL DE RELATÓRIOS -->
+  <div id="reportsModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
+      <div class="modal-content w-full max-w-5xl">
+          <div class="modal-header">
+              <h2 class="text-2xl font-bold text-gray-800">Relatórios de Desempenho</h2>
+              <button class="btn-close-modal text-3xl text-gray-400 hover:text-gray-600">&times;</button>
+          </div>
+          <div class="modal-body">
+              <div class="bg-gray-50 p-4 rounded-lg border">
+                  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                      <div>
+                          <label for="reportStartDate" class="text-sm font-medium">Data Início</label>
+                          <input type="date" id="reportStartDate" class="w-full p-2 border rounded-md">
+                      </div>
+                      <div>
+                          <label for="reportEndDate" class="text-sm font-medium">Data Fim</label>
+                          <input type="date" id="reportEndDate" class="w-full p-2 border rounded-md">
+                      </div>
+                      <div>
+                          <label for="reportBarber" class="text-sm font-medium">Barbeiro</label>
+                          <select id="reportBarber" class="w-full p-2 border rounded-md"></select>
+                      </div>
+                      <button id="generateReportBtn" class="btn bg-amber-800 text-white w-full">Gerar Relatório</button>
+                  </div>
+              </div>
+              <div id="reportResult" class="mt-6"></div>
+          </div>
+      </div>
+  </div>
 
-.vehicle-card:hover { 
-  transform: translateY(-3px); 
-  box-shadow: 0 8px 12px rgba(0,0,0,0.1); 
-  z-index: 10;
-}
+  <!-- MODAL DE CONFIGURAÇÕES -->
+    <div id="configModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="modal-content w-full max-w-3xl">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold text-gray-800">Configurações Gerais</h2>
+                <button class="btn-close-modal text-3xl text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="modal-body grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Seção de Serviços -->
+                <div>
+                    <h3 class="section-title">Gerenciar Serviços</h3>
+                    <div id="configServicosList" class="space-y-2 mb-4"></div>
+                    <form id="addServicoForm" class="flex gap-2">
+                        <input type="text" id="newServicoName" placeholder="Nome do Serviço" class="p-2 border rounded w-full" required>
+                        <input type="number" id="newServicoPrice" placeholder="Preço" class="p-2 border rounded w-1/2" required>
+                        <button type="submit" class="btn bg-blue-600 text-white">Add</button>
+                    </form>
+                </div>
+                <!-- Seção de Produtos -->
+                <div>
+                    <h3 class="section-title">Gerenciar Produtos</h3>
+                    <div id="configProdutosList" class="space-y-2 mb-4"></div>
+                    <form id="addProdutoForm" class="flex gap-2">
+                        <input type="text" id="newProdutoName" placeholder="Nome do Produto" class="p-2 border rounded w-full" required>
+                        <input type="number" id="newProdutoPrice" placeholder="Preço" class="p-2 border rounded w-1/2" required>
+                        <button type="submit" class="btn bg-blue-600 text-white">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-/* CORES POR STATUS DA BARBEARIA */
-.vehicle-card.status-Aguardando { border-left-color: #f59e0b; } /* Ambar */
-.vehicle-card.status-Em-Atendimento { border-left-color: #3b82f6; } /* Azul */
-.vehicle-card.status-Aguardando-Pagamento { border-left-color: #10b981; } /* Verde */
-.vehicle-card.status-Finalizado { border-left-color: #6b7280; opacity: 0.9; } /* Cinza */
+  <!-- SCRIPTS -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="js/app.js"></script>
 
-/* =============== MODAIS =============== */
-.modal { 
-  background: rgba(0, 0, 0, 0.6); 
-  backdrop-filter: blur(5px); 
-  z-index: 50;
-}
-
-.modal-content { 
-  background: #f8fafc; 
-  border-radius: 16px; 
-  max-height: 90vh; 
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-header {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 1rem 1.5rem;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.modal-body {
-  overflow-y: auto;
-  flex-grow: 1;
-  padding: 1.5rem;
-}
-
-.modal-footer {
-  background: white;
-  border-top: 1px solid #e2e8f0;
-  padding: 1rem 1.5rem;
-  display: flex;
-  justify-content: flex-end;
-  flex-shrink: 0;
-}
-
-/* =============== BOTÕES =============== */
-.btn { 
-  transition: all 0.2s ease; 
-  border-radius: 8px; 
-  font-weight: 600; 
-  padding: 0.5rem 1rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.btn:hover { 
-  transform: translateY(-2px); 
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-/* =============== TIMELINE =============== */
-.timeline { 
-  border-left: 3px solid #e5e7eb; 
-  position: relative;
-}
-
-.timeline-item { 
-  position: relative; 
-  padding-left: 2.5rem; 
-  margin-bottom: 1.5rem;
-}
-
-.timeline-icon {
-  position: absolute; 
-  left: -0.875rem;
-  top: 0.25rem;
-  width: 1.75rem; 
-  height: 1.75rem;
-  border-radius: 9999px; 
-  background-color: white; 
-  border: 3px solid;
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
-  z-index: 10;
-}
-
-.timeline-item-log .timeline-icon { border-color: #3b82f6; color: #3b82f6; }
-.timeline-item-status .timeline-icon { border-color: #10b981; color: #10b981; }
-
-/* =============== NOTIFICAÇÕES =============== */
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 12px 20px;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
-  z-index: 9999;
-  transform: translateX(120%);
-  transition: transform 0.3s ease;
-  max-width: 300px;
-}
-
-.notification.show {
-  transform: translateX(0);
-}
-
-.notification.success {
-  background-color: #10b981;
-}
-
-.notification.error {
-  background-color: #ef4444;
-}
-
-/* =============== SEÇÕES DO MODAL DE DETALHES =============== */
-.section-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-/* Estilos para Impressão */
-@media print {
-    .no-print {
-        display: none !important;
-    }
-    .modal-body {
-        overflow: visible;
-    }
-    .modal-content {
-        box-shadow: none;
-        border: 1px solid #ccc;
-    }
-}
+</body>
+</html>

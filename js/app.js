@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==================================================================
   const loginUser = (user) => {
     currentUser = user;
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    localStorage.setItem('habibiUser', JSON.stringify(user));
     document.getElementById('currentUserName').textContent = user.name;
     userScreen.classList.add('hidden');
     app.classList.remove('hidden');
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   
   const checkLoggedInUser = () => {
-    const storedUser = localStorage.getItem('currentUser');
+    const storedUser = localStorage.getItem('habibiUser');
     if (storedUser) loginUser(JSON.parse(storedUser));
     else {
       userList.innerHTML = USERS.map(user =>
@@ -251,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderTimeline(atendimento);
     
-    // Adiciona a assinatura dinamicamente
     const actionsColumn = document.getElementById('actions-column');
     const existingSignature = actionsColumn.querySelector('.dev-signature');
     if (existingSignature) existingSignature.remove();
@@ -298,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   logoutButton.addEventListener('click', () => {
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem('habibiUser');
     db.ref('atendimentos').off();
     location.reload();
   });

@@ -221,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const atendimento = allAtendimentos[id];
     if (!atendimento) return;
 
+    detailsForm.reset();
     document.getElementById('detailsAtendimentoId').value = id;
     document.getElementById('detailsClienteNome').textContent = atendimento.clienteNome;
     document.getElementById('detailsFichaNumero').textContent = `Ficha #${String(atendimento.fichaNumero).padStart(4, '0')}`;

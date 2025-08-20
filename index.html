@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -9,7 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="css/styles.css"> <!-- Seu arquivo de estilos personalizados -->
 </head>
 <body class="bg-stone-100">
   <!-- TELA DE LOGIN POR USUÁRIO -->
@@ -58,50 +59,11 @@
             <p><strong>Telefone:</strong> (17) 98155-3982 | <strong>Horário:</strong> Terça a Sábado, das 10h às 19h</p>
         </div>
     </footer>
-  </div>
 
-  <!-- MODAIS -->
-  <div id="atendimentoModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="modal-content w-full max-w-xl">
-      <div class="modal-header flex justify-between items-center">
-        <h2 id="atendimentoModalTitle" class="text-2xl font-bold text-gray-800">Agendar Novo Atendimento</h2>
-      </div>
-      <div class="modal-body">
-        <form id="atendimentoForm" class="space-y-4">
-          <input type="hidden" id="atendimentoId">
-          <div class="form-group">
-            <label for="clienteNome" class="block text-sm font-medium">Nome do Cliente</label>
-            <input id="clienteNome" type="text" placeholder="Nome completo" required class="p-2 border rounded w-full">
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-              <div class="form-group">
-                  <label for="agendamentoData" class="block text-sm font-medium">Data</label>
-                  <input id="agendamentoData" type="date" required class="p-2 border rounded w-full">
-              </div>
-              <div class="form-group">
-                  <label for="agendamentoHora" class="block text-sm font-medium">Hora</label>
-                  <input id="agendamentoHora" type="time" required class="p-2 border rounded w-full">
-              </div>
-          </div>
-          <div class="form-group">
-            <label for="barbeiroResponsavel" class="block text-sm font-medium">Barbeiro</label>
-            <select id="barbeiroResponsavel" required class="p-2 border rounded w-full"></select>
-          </div>
-          <div class="form-group">
-            <label class="block text-sm font-medium">Serviços Agendados</label>
-            <div id="servicosList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 border rounded-md bg-gray-50 max-h-40 overflow-y-auto"></div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-close-modal btn bg-gray-200 hover:bg-gray-300 text-gray-800">Cancelar</button>
-        <button type="submit" form="atendimentoForm" class="btn bg-amber-800 hover:bg-amber-900 text-white">Salvar Agendamento</button>
-      </div>
-    </div>
-  </div>
+    <!-- Modais e outros componentes... -->
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
-  <script src="app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+    <script src="js/app.js"></script> <!-- Seu script principal -->
 </body>
 </html>

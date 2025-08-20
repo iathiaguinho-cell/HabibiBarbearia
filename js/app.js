@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const existingSignature = actionsColumn.querySelector('.dev-signature');
     if (existingSignature) existingSignature.remove();
     const signatureDiv = document.createElement('div');
-    signatureDiv.className = 'dev-signature text-center text-xs text-gray-500 mt-4';
+    signatureDiv.className = 'dev-signature text-center text-xs text-gray-500 mt-4 no-print';
     signatureDiv.innerHTML = `<p>Desenvolvido com 🤖 por <strong>thIAguinho Soluções</strong></p>`;
     actionsColumn.appendChild(signatureDiv);
 
@@ -441,27 +441,46 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   });
 
+  const saveDetails = async () => {
+    const id = document.getElementById('detailsAtendimentoId').value;
+    const atendimento = allAtendimentos[id];
+    
+    const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
+    const desconto = parseFloat(document.getElementById('detailsDesconto').value) || 0;
+    
+    const updates = {
+        produtos: produtosAdicionadosState,
+        formaPagamento: document.getElementById('detailsFormaPagamento').value,
+        desconto: desconto,
+        observacoes: document.getElementById('detailsObservacoes').value,
+        valorProdutos: produtosTotal,
+        valorTotal: atendimento.valorServicos + produtosTotal - desconto,
+        lastUpdate: new Date().toISOString()
+    };
+
+    await db.ref(`atendimentos/${id}`).update(updates);
+    return true;
+  };
+
   detailsForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const id = document.getElementById('detailsAtendimentoId').value;
-      const atendimento = allAtendimentos[id];
-      
-      const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
-      const desconto = parseFloat(document.getElementById('detailsDesconto').value) || 0;
-      
-      const updates = {
-          produtos: produtosAdicionadosState,
-          formaPagamento: document.getElementById('detailsFormaPagamento').value,
-          desconto: desconto,
-          observacoes: document.getElementById('detailsObservacoes').value,
-          valorProdutos: produtosTotal,
-          valorTotal: atendimento.valorServicos + produtosTotal - desconto,
-          lastUpdate: new Date().toISOString()
-      };
-
-      await db.ref(`atendimentos/${id}`).update(updates);
+      await saveDetails();
       showNotification('Ficha atualizada com sucesso!', 'success');
       detailsModal.classList.add('hidden');
+  });
+
+  document.getElementById('saveAndNextStatusBtn').addEventListener('click', async () => {
+    const saved = await saveDetails();
+    if (saved) {
+        const id = document.getElementById('detailsAtendimentoId').value;
+        const atendimento = allAtendimentos[id];
+        const currentIndex = STATUS_LIST.indexOf(atendimento.status);
+        const nextStatus = STATUS_LIST[currentIndex + 1];
+        if (nextStatus) {
+            updateAtendimentoStatus(id, nextStatus);
+        }
+        detailsModal.classList.add('hidden');
+    }
   });
 
   // --- LÓGICA DE RELATÓRIOS ---

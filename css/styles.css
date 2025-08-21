@@ -15,7 +15,7 @@ body {
     box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
 }
 
-/* =============== NOVO LAYOUT DO DASHBOARD (INSPIRADO NA IMAGEM) =============== */
+/* =============== LAYOUT DO DASHBOARD =============== */
 #barberDashboard {
   display: flex;
   flex-direction: column;
@@ -23,7 +23,7 @@ body {
 }
 
 .barber-section {
-  background-color: #e9e4d9; /* Fundo um pouco mais escuro para a seção */
+  background-color: #e9e4d9;
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.08);
@@ -32,9 +32,9 @@ body {
 
 .barber-header {
   font-family: 'Playfair Display', serif;
-  font-size: 2rem; /* 32px */
+  font-size: 2rem;
   font-weight: 700;
-  color: #3a2e25; /* Marrom escuro */
+  color: #3a2e25;
   text-align: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
@@ -55,32 +55,27 @@ body {
   box-shadow: none;
 }
 
-/* NOVO HEADER DAS COLUNAS */
 .status-column h3 {
   font-family: 'Playfair Display', serif;
   text-transform: uppercase;
   font-size: 1.25rem;
   padding: 0.75rem;
-  color: #f4f1eb; /* Texto claro */
+  color: #f4f1eb;
   text-align: center;
   border-radius: 8px 8px 0 0;
-  margin-bottom: 1rem !important; /* Sobrescreve margens existentes */
-  position: relative;
-  overflow: hidden;
+  margin-bottom: 1rem !important;
 }
 
-/* Cores dos Headers */
-.status-column[data-status-header="Aguardando"] h3 { background-color: #c0a080; } /* Bege/Marrom claro */
-.status-column[data-status-header="Em-Atendimento"] h3 { background-color: #b08d57; } /* Dourado/Mostarda */
-.status-column[data-status-header="Aguardando-Pagamento"] h3 { background-color: #5a7d7c; } /* Verde azulado */
-.status-column[data-status-header="Finalizado"] h3 { background-color: #4a413a; } /* Marrom escuro */
+.status-column[data-status-header="Aguardando"] h3 { background-color: #c0a080; }
+.status-column[data-status-header="Em-Atendimento"] h3 { background-color: #b08d57; }
+.status-column[data-status-header="Aguardando-Pagamento"] h3 { background-color: #5a7d7c; }
+.status-column[data-status-header="Finalizado"] h3 { background-color: #4a413a; }
 
 .client-list {
   flex-grow: 1; 
   padding: 0;
 }
 
-/* NOVO DESIGN DOS CARDS */
 .vehicle-card {
   background: #fdfaf6; 
   border-radius: 8px; 
@@ -98,13 +93,11 @@ body {
   z-index: 10;
 }
 
-/* CORES DOS CARDS POR STATUS */
 .vehicle-card.status-Aguardando { border-left-color: #c0a080; }
 .vehicle-card.status-Em-Atendimento { border-left-color: #b08d57; }
 .vehicle-card.status-Aguardando-Pagamento { border-left-color: #5a7d7c; }
 .vehicle-card.status-Finalizado { border-left-color: #4a413a; opacity: 0.85; }
 
-/* AJUSTES DE LAYOUT DO CARD */
 .card-info .name { font-size: 1.125rem; font-weight: 700; color: #3a2e25; }
 .card-info .time { font-size: 1rem; font-weight: 700; color: #8c7a6b; }
 .card-info .service { color: #6b5f55; }
@@ -124,8 +117,7 @@ body {
     }
 }
 
-
-/* =============== MODAIS (COM CORREÇÃO DE SCROLL) =============== */
+/* =============== MODAIS =============== */
 .modal { 
   background: rgba(40, 32, 28, 0.6); 
   backdrop-filter: blur(5px); 
@@ -135,10 +127,14 @@ body {
 .modal-content { 
   background: #f8fafc; 
   border-radius: 16px; 
-  max-height: 100vh;
-  overflow-y: auto;
+  max-height: 95vh;
+  overflow: hidden; /* O scroll principal é no modal-body */
   display: flex;
   flex-direction: column;
+}
+
+.modal-header, .modal-footer {
+  flex-shrink: 0;
 }
 
 .modal-header {
@@ -188,63 +184,67 @@ body {
   margin-left: 0.875rem;
 }
 
-.timeline-item { 
-  position: relative; 
-  padding-left: 2.5rem; 
-}
-
+.timeline-item { position: relative; padding-left: 2.5rem; }
 .timeline-icon {
   position: absolute; 
-  left: -0.875rem;
-  top: 0.25rem;
-  width: 1.75rem; 
-  height: 1.75rem;
+  left: -0.875rem; top: 0.25rem;
+  width: 1.75rem; height: 1.75rem;
   border-radius: 9999px; 
   background-color: white; 
   border: 3px solid;
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   z-index: 10;
 }
-
 .timeline-item-log .timeline-icon { border-color: #b08d57; color: #b08d57; }
 .timeline-item-status .timeline-icon { border-color: #5a7d7c; color: #5a7d7c; }
 
 /* =============== NOTIFICAÇÕES =============== */
 .notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 12px 20px;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
+  position: fixed; top: 20px; right: 20px;
+  padding: 12px 20px; border-radius: 8px;
+  color: white; font-weight: 500;
   z-index: 9999;
   transform: translateX(120%);
   transition: transform 0.3s ease;
   max-width: 300px;
 }
-
 .notification.show { transform: translateX(0); }
 .notification.success { background-color: #5a7d7c; }
 .notification.error { background-color: #c0392b; }
 
-/* =============== SEÇÕES DO MODAL DE DETALHES =============== */
-.section-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e2e8f0;
+/* =============== ESTILOS DO RELATÓRIO "TABLET" =============== */
+.tablet-frame {
+  background-color: #2d3748; /* Cinza escuro, como a moldura de um tablet */
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2), inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.tablet-screen {
+  background-color: #ffffff;
+  border-radius: 10px;
+  max-height: 400px; /* Altura máxima para a tela */
+  overflow: auto; /* Scroll vertical e horizontal se necessário */
+}
+
+#reportDetailTable thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#reportDetailTable tbody tr:nth-child(even) {
+  background-color: #f7fafc;
+}
+
+#reportDetailTable tbody tr:hover {
+  background-color: #edf2f7;
 }
 
 /* =============== RESPONSIVIDADE PARA MODAIS =============== */
 @media (max-width: 768px) {
     .modal-content {
         max-width: 95vw;
-        max-height: 100vh;
         margin: 1rem;
     }
     .modal-body, .modal-header, .modal-footer { padding: 1rem; }

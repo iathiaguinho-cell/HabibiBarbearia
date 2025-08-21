@@ -31,7 +31,6 @@
         grid-template-columns: repeat(4, 1fr);
         gap: 1.5rem;
     }
-    /* Em telas menores, o Kanban se torna um container de flexbox com scroll horizontal */
     @media (max-width: 1024px) {
         .kanban-container {
             display: flex;
@@ -47,7 +46,6 @@
       flex-direction: column; 
       min-height: 100px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      /* Para o scroll horizontal em telas menores */
       @media (max-width: 1024px) {
         flex: 0 0 300px; /* Não encolhe, não cresce, base de 300px */
         scroll-snap-align: start;
@@ -239,7 +237,7 @@
           </button>
           <div class="text-right">
             <p id="currentUserName" class="font-semibold text-gray-700"></p>
-            <button id="logoutButton" class="text-sm text-red-600 hover:text-red-700">Sair</button>
+            <button id="logoutButton" class="text-sm text-red-500 hover:text-red-700">Sair</button>
           </div>
         </div>
       </div>
@@ -257,7 +255,52 @@
     </footer>
   </div>
 
-  <!-- Modais e outros componentes... -->
+  <!-- MODAL PARA AGENDAR (NOVA FICHA) -->
+  <div id="atendimentoModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="modal-content w-full max-w-xl">
+      <div class="modal-header flex justify-between items-center">
+        <h2 id="atendimentoModalTitle" class="text-2xl font-bold text-gray-800">Agendar Novo Atendimento</h2>
+      </div>
+      <div class="modal-body">
+        <form id="atendimentoForm" class="space-y-4">
+          <input type="hidden" id="atendimentoId">
+          <div class="form-group">
+            <label for="clienteNome" class="block text-sm font-medium">Nome do Cliente</label>
+            <input id="clienteNome" type="text" placeholder="Nome completo" required class="p-2 border rounded w-full">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+              <div class="form-group">
+                  <label for="agendamentoData" class="block text-sm font-medium">Data</label>
+                  <input id="agendamentoData" type="date" required class="p-2 border rounded w-full">
+              </div>
+              <div class="form-group">
+                  <label for="agendamentoHora" class="block text-sm font-medium">Hora</label>
+                  <input id="agendamentoHora" type="time" required class="p-2 border rounded w-full">
+              </div>
+          </div>
+          <div class="form-group">
+            <label for="barbeiroResponsavel" class="block text-sm font-medium">Barbeiro</label>
+            <select id="barbeiroResponsavel" required class="p-2 border rounded w-full">
+              <option value="João">Barbeiro João</option>
+              <option value="Maria">Barbeira Maria</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="block text-sm font-medium">Serviços Agendados</label>
+            <div id="servicosList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 border rounded-md bg-gray-50 max-h-40 overflow-y-auto"></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-close-modal btn bg-gray-200 hover:bg-gray-300 text-gray-800">Cancelar</button>
+        <button type="submit" form="atendimentoForm" class="btn bg-amber-800 hover:bg-amber-900 text-white">Salvar Agendamento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
 
   <!-- Script Inline -->
   <script>
@@ -381,102 +424,68 @@
             form.reset();
             document.getElementById('atendimentoModal').classList.add('hidden');
         });
+
+        // Calculadora de Desconto
+        document.getElementById('detailsDesconto').addEventListener('input', (e) => {
+            const discountValue = parseFloat(e.target.value) || 0;
+            const appointmentId = document.getElementById('detailsAtendimentoId').value;
+            const appointment = getAppointmentsFromDatabase()[appointmentId]; // Substitua pela função real
+            if (appointment) {
+                const originalPrice = calculateOriginalPrice(appointment.services);
+                const finalPrice = Math.max(originalPrice - discountValue, 0);
+                updateUIWithDiscount(finalPrice);
+            }
+        });
+
+        function calculateOriginalPrice(services) {
+            return services.reduce((total, service) => total + getServicePrice(service), 0);
+        }
+
+        function getServicePrice(serviceName) {
+            const servicePrices = {
+                'Corte de Cabelo': 50,
+                'Barba': 30,
+                'Penteado': 40
+            };
+            return servicePrices[serviceName] || 0;
+        }
+
+        function updateUIWithDiscount(finalPrice) {
+            document.getElementById('detailsValorFinal').textContent = `R$ ${finalPrice.toFixed(2)}`;
+        }
+
+        // Notificações
+        function showNotification(message, type = 'success') {
+            const existing = document.getElementById('notification');
+            if (existing) existing.remove();
+            const notification = document.createElement('div');
+            notification.id = 'notification';
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 10);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => { if (document.body.contains(notification)) notification.remove(); }, 300);
+            }, 3000);
+        }
+
+        // Botão de logout
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            document.getElementById('userScreen').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('currentUserName').textContent = '';
+        });
     });
 
     // Função para mostrar notificações
-    function showNotification(message, type = 'success') {
-        const existing = document.getElementById('notification');
-        if (existing) existing.remove();
-        const notification = document.createElement('div');
-        notification.id = 'notification';
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.classList.add('show'), 10);
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => { if (document.body.contains(notification)) notification.remove(); }, 300);
-        }, 3000);
+    function getAppointmentsFromDatabase() {
+        // Simula recuperação de dados do Firebase
+        return {
+            1: { clientName: 'João Silva', date: '2023-10-10', time: '10:00', barber: 'João', services: ['Corte de Cabelo'], status: 'Aguardando' },
+            2: { clientName: 'Maria Santos', date: '2023-10-10', time: '11:00', barber: 'Maria', services: ['Barba'], status: 'Em Atendimento' }
+        };
     }
-
-    // Adiciona eventos ao Google Calendar
-    async function addEventToGoogleCalendar(event) {
-        const googleCalendarApiKey = 'YOUR_GOOGLE_CALENDAR_API_KEY'; // Substitua pela sua chave real
-        const calendarId = 'primary';
-
-        const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?key=${googleCalendarApiKey}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer YOUR_ACCESS_TOKEN` // Substitua pelo token real
-            },
-            body: JSON.stringify(event)
-        });
-
-        if (response.ok) {
-            showNotification('Evento adicionado ao Google Calendar', 'success');
-        } else {
-            showNotification('Falha ao adicionar evento ao Google Calendar', 'error');
-        }
-    }
-
-    // Botão de logout
-    document.getElementById('logoutButton').addEventListener('click', () => {
-        document.getElementById('userScreen').classList.remove('hidden');
-        document.getElementById('app').classList.add('hidden');
-        document.getElementById('currentUserName').textContent = '';
-    });
   </script>
-
-  <!-- Modal de Agendamento -->
-  <div id="atendimentoModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="modal-content w-full max-w-xl">
-      <div class="modal-header flex justify-between items-center">
-        <h2 id="atendimentoModalTitle" class="text-2xl font-bold text-gray-800">Agendar Novo Atendimento</h2>
-      </div>
-      <div class="modal-body">
-        <form id="atendimentoForm" class="space-y-4">
-          <input type="hidden" id="atendimentoId">
-          <div class="form-group">
-            <label for="clienteNome" class="block text-sm font-medium">Nome do Cliente</label>
-            <input id="clienteNome" type="text" placeholder="Nome completo" required class="p-2 border rounded w-full">
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-              <div class="form-group">
-                  <label for="agendamentoData" class="block text-sm font-medium">Data</label>
-                  <input id="agendamentoData" type="date" required class="p-2 border rounded w-full">
-              </div>
-              <div class="form-group">
-                  <label for="agendamentoHora" class="block text-sm font-medium">Hora</label>
-                  <input id="agendamentoHora" type="time" required class="p-2 border rounded w-full">
-              </div>
-          </div>
-          <div class="form-group">
-            <label for="barbeiroResponsavel" class="block text-sm font-medium">Barbeiro</label>
-            <select id="barbeiroResponsavel" required class="p-2 border rounded w-full">
-              <option value="João">Barbeiro João</option>
-              <option value="Maria">Barbeira Maria</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="block text-sm font-medium">Serviços Agendados</label>
-            <div id="servicosList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 border rounded-md bg-gray-50 max-h-40 overflow-y-auto">
-              <div><input type="checkbox" id="servico1" value="Corte de Cabelo"><label for="servico1"> Corte de Cabelo</label></div>
-              <div><input type="checkbox" id="servico2" value="Barba"><label for="servico2"> Barba</label></div>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-close-modal btn bg-gray-200 hover:bg-gray-300 text-gray-800">Cancelar</button>
-        <button type="submit" form="atendimentoForm" class="btn bg-amber-800 hover:bg-amber-900 text-white">Salvar Agendamento</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Firebase Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
 </body>
 </html>

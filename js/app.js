@@ -47,9 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentReportTxtContent = '';
   
   const USERS = [
-    { name: 'Habibi', role: 'Gestor 👑' }, 
+    { name: 'Habibi', role: 'Gestor 👳🏼‍♂️' }, 
     { name: 'Júnior', role: 'Barbeiro 💈' }, 
-    { name: 'Willian', role: 'Barbeiro 💈' },
+    { name: 'William', role: 'Barbeiro 💈' },
     { name: 'Recepção', role: 'Recepcionista 🛎️' }
   ];
   
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const formatStatus = (status) => {
     const statusMap = {
-        'Aguardando': '⏳ Aguardando',
+        'Agendado': '⏳ Agendado',
         'Em-Atendimento': '✂️ Em Atendimento',
         'Aguardando-Pagamento': '💳 Pagamento',
         'Finalizado': '✅ Finalizado'
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const initializeDashboard = () => {
     const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
     barberDashboard.innerHTML = barbeiros.map(barber => {
-        const barberName = barber.name.replace(/👑|💈|🛎️/g, '').trim();
+        const barberName = barber.name.replace(/👳🏼‍♂️|💈|🛎️/g, '').trim();
         return `
             <section class="barber-section">
                 <h2 class="barber-header">${barberName}</h2>
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ref.on('child_added', s => {
       allAtendimentos[s.key] = { ...s.val(), id: s.key };
       const atendimento = allAtendimentos[s.key];
-      const barberName = (atendimento.barbeiroResponsavel || '').replace(/👑|💈|🛎️/g, '').trim();
+      const barberName = (atendimento.barbeiroResponsavel || '').replace(/👳🏼‍♂️|💈|🛎️/g, '').trim();
       const list = barberDashboard.querySelector(`.client-list[data-barber="${barberName}"][data-status="${atendimento.status}"]`);
       if (list) list.insertAdjacentHTML('beforeend', createCardHTML(atendimento));
     });
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
       allAtendimentos[s.key] = atendimento;
       const card = document.getElementById(s.key);
       if (card) card.remove();
-      const barberName = (atendimento.barbeiroResponsavel || '').replace(/👑|💈|🛎️/g, '').trim();
+      const barberName = (atendimento.barbeiroResponsavel || '').replace(/👳🏼‍♂️|💈|🛎️/g, '').trim();
       const list = barberDashboard.querySelector(`.client-list[data-barber="${barberName}"][data-status="${atendimento.status}"]`);
       if (list) list.insertAdjacentHTML('beforeend', createCardHTML(atendimento));
     });
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       userList.innerHTML = USERS.map(user =>
         `<div class="p-4 bg-gray-100 rounded-lg hover:bg-amber-100 cursor-pointer user-btn" data-user='${JSON.stringify(user)}'>
-          <p class="font-semibold">${user.name.replace(/👑|💈|🛎️/g, '').trim()}</p>
+          <p class="font-semibold">${user.name.replace(/👳🏼‍♂️|💈|🛎️/g, '').trim()}</p>
           <p class="text-sm text-gray-500">${user.role}</p>
         </div>`
       ).join('');
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('atendimentoModalTitle').textContent = '🗓️ Agendar Novo Atendimento';
     const barbeiroSelect = document.getElementById('barbeiroResponsavel');
     const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
-    barbeiroSelect.innerHTML = '<option value="">Selecione...</option>' + barbeiros.map(b => `<option value="${b.name.replace(/👑|💈|🛎️/g, '').trim()}">${b.name.replace(/👑|💈|🛎️/g, '').trim()}</option>`).join('');
+    barbeiroSelect.innerHTML = '<option value="">Selecione...</option>' + barbeiros.map(b => `<option value="${b.name.replace(/👳🏼‍♂️|💈|🛎️/g, '').trim()}">${b.name.replace(/👳🏼‍♂️|💈|🛎️/g, '').trim()}</option>`).join('');
     const servicosList = document.getElementById('servicosList');
     servicosList.innerHTML = configData.servicos.map(s => `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="${s.price}" data-name="${s.name}" class="form-checkbox h-4 w-4"><span class="text-sm">${s.name} (${formatCurrency(s.price)})</span></label>`).join('');
     atendimentoModal.classList.remove('hidden');
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reportsModal').querySelector('h2').textContent = '📊 Relatórios de Desempenho';
     const barberSelect = document.getElementById('reportBarber');
     const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
-    barberSelect.innerHTML = '<option value="todos">Todos os Barbeiros</option>' + barbeiros.map(b => `<option value="${b.name.replace(/👑|💈|🛎️/g, '').trim()}">${b.name.replace(/👑|💈|🛎️/g, '').trim()}</option>`).join('');
+    barberSelect.innerHTML = '<option value="todos">Todos os Barbeiros</option>' + barbeiros.map(b => `<option value="${b.name.replace(/👳🏼‍♂️|💈|🛎️/g, '').trim()}">${b.name.replace(/👳🏼‍♂️|💈|🛎️/g, '').trim()}</option>`).join('');
     document.getElementById('reportSummaryCards').innerHTML = '';
     document.getElementById('reportTableContainer').classList.add('hidden');
     reportsModal.classList.remove('hidden');

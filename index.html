@@ -8,7 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <!-- CORREÇÃO: Caminho do CSS restaurado para a pasta /css -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="bg-stone-100">
@@ -32,13 +31,13 @@
         </div>
         <div class="flex items-center gap-2 sm:gap-4">
           <button id="configBtn" class="btn bg-stone-600 hover:bg-stone-700 text-white px-3 py-2 sm:px-4 flex items-center gap-2 hidden">
-            <i class='bx bx-cog'></i><span class="hidden sm:inline">Config</span>
+            <i class='bx bx-cog'></i><span class="hidden sm:inline">⚙️ Config</span>
           </button>
-          <button id="reportsBtn" class="btn bg-stone-600 hover:bg-stone-700 text-white px-3 py-2 sm:px-4 flex items-center gap-2">
-            <i class='bx bxs-report'></i><span class="hidden sm:inline">Relatórios</span>
+          <button id="reportsBtn" class="btn bg-stone-600 hover:bg-stone-700 text-white px-3 py-2 sm:px-4 flex items-center gap-2 hidden">
+            <i class='bx bxs-report'></i><span class="hidden sm:inline">📊 Relatórios</span>
           </button>
           <button id="addAtendimentoBtn" class="btn bg-amber-800 hover:bg-amber-900 text-white px-3 py-2 sm:px-4 flex items-center gap-2">
-            <i class='bx bx-plus-circle'></i><span class="hidden sm:inline">Nova Ficha</span>
+            <i class='bx bx-plus-circle'></i><span class="hidden sm:inline">✨ Nova Ficha</span>
           </button>
           <div class="text-right">
             <p id="currentUserName" class="font-semibold text-gray-700"></p>
@@ -48,7 +47,6 @@
       </div>
     </header>
 
-    <!-- O conteúdo principal agora é o dashboard dos barbeiros -->
     <main class="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
       <div id="barberDashboard"></div>
     </main>
@@ -65,7 +63,7 @@
   <div id="atendimentoModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div class="modal-content w-full max-w-xl">
       <div class="modal-header flex justify-between items-center">
-        <h2 id="atendimentoModalTitle" class="text-2xl font-bold text-gray-800">Agendar Novo Atendimento</h2>
+        <h2 id="atendimentoModalTitle" class="text-2xl font-bold text-gray-800">🗓️ Agendar Novo Atendimento</h2>
       </div>
       <div class="modal-body">
         <form id="atendimentoForm" class="space-y-4">
@@ -96,12 +94,12 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-close-modal btn bg-gray-200 hover:bg-gray-300 text-gray-800">Cancelar</button>
-        <button type="submit" form="atendimentoForm" class="btn bg-amber-800 hover:bg-amber-900 text-white">Salvar Agendamento</button>
+        <button type="submit" form="atendimentoForm" class="btn bg-amber-800 hover:bg-amber-900 text-white">✅ Salvar Agendamento</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL DE DETALHES E GERENCIAMENTO DO ATENDIMENTO (COM CORREÇÃO PARA MOBILE) -->
+  <!-- MODAL DE DETALHES E GERENCIAMENTO DO ATENDIMENTO -->
   <div id="detailsModal" class="modal fixed inset-0 z-50 hidden overflow-y-auto items-start md:items-center justify-center p-4">
     <div class="modal-content w-full max-w-4xl">
       <div id="ficha-para-imprimir" class="p-6">
@@ -120,7 +118,7 @@
             <!-- Coluna Esquerda: Resumo e Histórico -->
             <div class="space-y-6">
               <div class="bg-white rounded-lg shadow p-4">
-                <h3 class="section-title">Resumo da Ficha</h3>
+                <h3 class="section-title">📝 Resumo da Ficha</h3>
                 <div class="space-y-2 text-sm">
                   <div><strong class="block text-gray-500">Agendamento:</strong> <span id="detailsAgendamento"></span></div>
                   <div><strong class="block text-gray-500">Barbeiro:</strong> <span id="detailsBarbeiro"></span></div>
@@ -129,15 +127,14 @@
                 </div>
               </div>
               <div class="bg-white rounded-lg shadow p-4">
-                <h3 class="section-title">Histórico</h3>
+                <h3 class="section-title">📜 Histórico</h3>
                 <div id="timelineContainer" class="timeline mt-4 space-y-6"></div>
               </div>
             </div>
             <!-- Coluna Direita: Ações e Fechamento -->
             <div class="space-y-6" id="actions-column">
                <div class="bg-white rounded-lg shadow p-4">
-                  <h3 class="section-title">Adicionar Itens</h3>
-                  <!-- Adicionar Serviços -->
+                  <h3 class="section-title">➕ Adicionar Itens</h3>
                   <div class="mb-4">
                       <label class="block text-sm font-medium text-gray-600 mb-1">Adicionar Serviço</label>
                       <div class="flex gap-2">
@@ -145,7 +142,6 @@
                           <button type="button" id="detailsAddServicoBtn" class="btn bg-gray-700 text-white px-3">Add</button>
                       </div>
                   </div>
-                  <!-- Adicionar Produtos -->
                   <div>
                       <label class="block text-sm font-medium text-gray-600 mb-1">Adicionar Produto</label>
                       <div class="flex gap-2">
@@ -160,7 +156,7 @@
                   </div>
                </div>
                <div class="bg-white rounded-lg shadow p-4">
-                  <h3 class="section-title">Fechamento e Observações</h3>
+                  <h3 class="section-title">💵 Fechamento e Observações</h3>
                   <div class="form-group">
                       <label for="detailsFormaPagamento" class="block text-sm font-medium">Forma de Pagamento</label>
                       <select id="detailsFormaPagamento" class="p-2 border rounded w-full"></select>
@@ -180,13 +176,13 @@
                </div>
                <div class="bg-white rounded-lg shadow p-4 space-y-3 no-print">
                   <button type="submit" form="detailsForm" class="w-full btn bg-green-600 hover:bg-green-700 text-white">
-                    <i class='bx bx-save'></i> Salvar Alterações
+                    <i class='bx bx-save'></i> 💾 Salvar Alterações
                   </button>
                   <button type="button" id="saveAndNextStatusBtn" class="w-full btn bg-blue-600 hover:bg-blue-700 text-white">
-                    <i class='bx bx-fast-forward-circle'></i> Salvar e Avançar Status
+                    <i class='bx bx-fast-forward-circle'></i> 🚀 Salvar e Avançar
                   </button>
                   <button id="deleteBtn" class="w-full btn bg-red-600 hover:bg-red-700 text-white hidden">
-                    <i class='bx bx-trash'></i> Excluir Ficha
+                    <i class='bx bx-trash'></i> 🗑️ Excluir Ficha
                   </button>
                </div>
             </div>
@@ -200,7 +196,7 @@
   <div id="reportsModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
       <div class="modal-content w-full max-w-5xl">
           <div class="modal-header">
-              <h2 class="text-2xl font-bold text-gray-800">Relatórios de Desempenho</h2>
+              <h2 class="text-2xl font-bold text-gray-800">📊 Relatórios de Desempenho</h2>
               <button class="btn-close-modal text-3xl text-gray-400 hover:text-gray-600">&times;</button>
           </div>
           <div class="modal-body">
@@ -230,11 +226,10 @@
     <div id="configModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
         <div class="modal-content w-full max-w-3xl">
             <div class="modal-header">
-                <h2 class="text-2xl font-bold text-gray-800">Configurações Gerais</h2>
+                <h2 class="text-2xl font-bold text-gray-800">⚙️ Configurações Gerais</h2>
                 <button class="btn-close-modal text-3xl text-gray-400 hover:text-gray-600">&times;</button>
             </div>
             <div class="modal-body grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Seção de Serviços -->
                 <div>
                     <h3 class="section-title">Gerenciar Serviços</h3>
                     <div id="configServicosList" class="space-y-2 mb-4"></div>
@@ -244,7 +239,6 @@
                         <button type="submit" class="btn bg-blue-600 text-white">Add</button>
                     </form>
                 </div>
-                <!-- Seção de Produtos -->
                 <div>
                     <h3 class="section-title">Gerenciar Produtos</h3>
                     <div id="configProdutosList" class="space-y-2 mb-4"></div>
@@ -261,8 +255,8 @@
   <!-- SCRIPTS -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <!-- CORREÇÃO: Caminho do JS restaurado para a pasta /js -->
   <script src="js/app.js"></script>
 
 </body>
 </html>
+

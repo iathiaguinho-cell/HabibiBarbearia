@@ -13,7 +13,32 @@ body {
     box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
 }
 
-/* =============== LAYOUT DO KANBAN RESPONSIVO =============== */
+/* =============== NOVO LAYOUT DO DASHBOARD POR BARBEIRO =============== */
+#barberDashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem; /* Espaço entre as seções dos barbeiros */
+}
+
+.barber-section {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.barber-header {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem; /* 28px */
+  font-weight: 700;
+  color: #1e293b; /* Cor mais escura para contraste */
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+
+/* =============== LAYOUT DO KANBAN RESPONSIVO (AGORA DENTRO DE CADA BARBEIRO) =============== */
 .kanban-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -75,7 +100,7 @@ body {
 .vehicle-card.status-Aguardando-Pagamento { border-left-color: #10b981; } /* Verde */
 .vehicle-card.status-Finalizado { border-left-color: #6b7280; opacity: 0.9; } /* Cinza */
 
-/* =============== MODAIS =============== */
+/* =============== MODAIS (COM CORREÇÃO DE SCROLL) =============== */
 .modal { 
   background: rgba(0, 0, 0, 0.6); 
   backdrop-filter: blur(5px); 
@@ -85,8 +110,8 @@ body {
 .modal-content { 
   background: #f8fafc; 
   border-radius: 16px; 
-  max-height: 90vh; 
-  overflow: hidden;
+  max-height: 100vh; /* CORREÇÃO: Permite altura total */
+  overflow-y: auto;   /* CORREÇÃO: Permite rolagem vertical interna */
   display: flex;
   flex-direction: column;
 }
@@ -203,7 +228,7 @@ body {
 @media (max-width: 768px) {
     .modal-content {
         max-width: 95vw;
-        max-height: 95vh;
+        max-height: 100vh; /* CORREÇÃO: Permite altura total também em telas menores */
         margin: 1rem;
     }
     

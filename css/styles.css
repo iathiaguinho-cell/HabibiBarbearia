@@ -3,7 +3,7 @@
 
 body { 
   font-family: 'Roboto', sans-serif; 
-  background-color: #f4f1eb; /* Tom de creme/bege claro */
+  background-color: #f4f1eb;
   overflow-x: hidden;
 }
 
@@ -117,7 +117,7 @@ body {
     }
 }
 
-/* =============== MODAIS =============== */
+/* =============== MODAIS (COM CORREÇÃO DE SCROLL) =============== */
 .modal { 
   background: rgba(40, 32, 28, 0.6); 
   backdrop-filter: blur(5px); 
@@ -128,7 +128,6 @@ body {
   background: #f8fafc; 
   border-radius: 16px; 
   max-height: 95vh;
-  overflow: hidden; /* O scroll principal é no modal-body */
   display: flex;
   flex-direction: column;
 }
@@ -143,6 +142,7 @@ body {
   padding: 1rem 1.5rem;
 }
 
+/* CORREÇÃO DA ROLAGEM: O corpo do modal é quem deve rolar */
 .modal-body {
   overflow-y: auto;
   flex-grow: 1;
@@ -214,7 +214,7 @@ body {
 
 /* =============== ESTILOS DO RELATÓRIO "TABLET" =============== */
 .tablet-frame {
-  background-color: #2d3748; /* Cinza escuro, como a moldura de um tablet */
+  background-color: #2d3748;
   border-radius: 20px;
   padding: 1rem;
   box-shadow: 0 10px 20px rgba(0,0,0,0.2), inset 0 0 10px rgba(0,0,0,0.5);
@@ -223,8 +223,8 @@ body {
 .tablet-screen {
   background-color: #ffffff;
   border-radius: 10px;
-  max-height: 400px; /* Altura máxima para a tela */
-  overflow: auto; /* Scroll vertical e horizontal se necessário */
+  max-height: 400px;
+  overflow: auto;
 }
 
 #reportDetailTable thead {

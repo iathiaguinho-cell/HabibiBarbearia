@@ -1,7 +1,9 @@
 /* =============== FONTES E ESTILOS GERAIS =============== */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500;700&display=swap');
+
 body { 
   font-family: 'Roboto', sans-serif; 
-  background-color: #fdfaf6; /* Um branco mais quente */
+  background-color: #f4f1eb; /* Tom de creme/bege claro */
   overflow-x: hidden;
 }
 
@@ -13,96 +15,119 @@ body {
     box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
 }
 
-/* =============== NOVO LAYOUT DO DASHBOARD POR BARBEIRO =============== */
+/* =============== NOVO LAYOUT DO DASHBOARD (INSPIRADO NA IMAGEM) =============== */
 #barberDashboard {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem; /* Espaço entre as seções dos barbeiros */
+  gap: 2.5rem;
 }
 
 .barber-section {
-  background-color: #ffffff;
+  background-color: #e9e4d9; /* Fundo um pouco mais escuro para a seção */
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.08);
+  border: 4px solid #dcd5c9;
 }
 
 .barber-header {
   font-family: 'Playfair Display', serif;
-  font-size: 1.75rem; /* 28px */
+  font-size: 2rem; /* 32px */
   font-weight: 700;
-  color: #1e293b; /* Cor mais escura para contraste */
+  color: #3a2e25; /* Marrom escuro */
+  text-align: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 1px solid #c9c0b3;
 }
 
-
-/* =============== LAYOUT DO KANBAN RESPONSIVO (AGORA DENTRO DE CADA BARBEIRO) =============== */
 .kanban-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
 }
 
-/* Em telas menores, o Kanban se torna um container com scroll horizontal */
+.status-column { 
+  background: transparent;
+  border-radius: 0; 
+  display: flex; 
+  flex-direction: column; 
+  box-shadow: none;
+}
+
+/* NOVO HEADER DAS COLUNAS */
+.status-column h3 {
+  font-family: 'Playfair Display', serif;
+  text-transform: uppercase;
+  font-size: 1.25rem;
+  padding: 0.75rem;
+  color: #f4f1eb; /* Texto claro */
+  text-align: center;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 1rem !important; /* Sobrescreve margens existentes */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Cores dos Headers */
+.status-column[data-status-header="Aguardando"] h3 { background-color: #c0a080; } /* Bege/Marrom claro */
+.status-column[data-status-header="Em-Atendimento"] h3 { background-color: #b08d57; } /* Dourado/Mostarda */
+.status-column[data-status-header="Aguardando-Pagamento"] h3 { background-color: #5a7d7c; } /* Verde azulado */
+.status-column[data-status-header="Finalizado"] h3 { background-color: #4a413a; } /* Marrom escuro */
+
+.client-list {
+  flex-grow: 1; 
+  padding: 0;
+}
+
+/* NOVO DESIGN DOS CARDS */
+.vehicle-card {
+  background: #fdfaf6; 
+  border-radius: 8px; 
+  padding: 1rem; 
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: all 0.2s ease-in-out; 
+  border: 1px solid #e0d9ce;
+  border-left-width: 5px;
+}
+
+.vehicle-card:hover { 
+  transform: translateY(-4px) scale(1.02); 
+  box-shadow: 0 8px 15px rgba(0,0,0,0.12); 
+  z-index: 10;
+}
+
+/* CORES DOS CARDS POR STATUS */
+.vehicle-card.status-Aguardando { border-left-color: #c0a080; }
+.vehicle-card.status-Em-Atendimento { border-left-color: #b08d57; }
+.vehicle-card.status-Aguardando-Pagamento { border-left-color: #5a7d7c; }
+.vehicle-card.status-Finalizado { border-left-color: #4a413a; opacity: 0.85; }
+
+/* AJUSTES DE LAYOUT DO CARD */
+.card-info .name { font-size: 1.125rem; font-weight: 700; color: #3a2e25; }
+.card-info .time { font-size: 1rem; font-weight: 700; color: #8c7a6b; }
+.card-info .service { color: #6b5f55; }
+.card-info .barber { font-size: 0.75rem; color: #8c7a6b; text-transform: uppercase; }
+.card-info .price { font-size: 1.1rem; font-weight: 700; color: #5a7d7c; }
+
 @media (max-width: 1024px) {
     .kanban-container {
         display: flex;
         overflow-x: auto;
-        scroll-behavior: smooth;
-        padding-bottom: 1rem; /* Espaço para a barra de rolagem */
-        scroll-snap-type: x mandatory; /* Efeito de "parada" nas colunas */
-        -webkit-overflow-scrolling: touch; /* Melhora a experiência de scroll em iOS */
+        padding-bottom: 1rem;
+        scroll-snap-type: x mandatory;
     }
-    
     .status-column {
-        flex: 0 0 300px; /* Não encolhe, não cresce, base de 300px */
+        flex: 0 0 300px;
         scroll-snap-align: start;
     }
 }
 
-.status-column { 
-  background: #f3f4f6; /* Cinza claro */
-  border-radius: 12px; 
-  display: flex; 
-  flex-direction: column; 
-  min-height: 100px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.client-list {
-  flex-grow: 1; 
-  overflow-y: auto; /* Permite scroll vertical se a lista for longa */
-  padding: 0 8px 8px 8px;
-}
-
-.vehicle-card { /* O nome da classe foi mantido para compatibilidade */
-  background: white; 
-  border-radius: 8px; 
-  padding: 12px; 
-  margin-bottom: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  transition: all 0.2s ease-in-out; 
-  border-left: 5px solid;
-  position: relative;
-}
-
-.vehicle-card:hover { 
-  transform: translateY(-3px); 
-  box-shadow: 0 8px 12px rgba(0,0,0,0.1); 
-  z-index: 10;
-}
-
-/* CORES POR STATUS DA BARBEARIA */
-.vehicle-card.status-Aguardando { border-left-color: #f59e0b; } /* Ambar */
-.vehicle-card.status-Em-Atendimento { border-left-color: #3b82f6; } /* Azul */
-.vehicle-card.status-Aguardando-Pagamento { border-left-color: #10b981; } /* Verde */
-.vehicle-card.status-Finalizado { border-left-color: #6b7280; opacity: 0.9; } /* Cinza */
 
 /* =============== MODAIS (COM CORREÇÃO DE SCROLL) =============== */
 .modal { 
-  background: rgba(0, 0, 0, 0.6); 
+  background: rgba(40, 32, 28, 0.6); 
   backdrop-filter: blur(5px); 
   z-index: 50;
 }
@@ -110,8 +135,8 @@ body {
 .modal-content { 
   background: #f8fafc; 
   border-radius: 16px; 
-  max-height: 100vh; /* CORREÇÃO: Permite altura total */
-  overflow-y: auto;   /* CORREÇÃO: Permite rolagem vertical interna */
+  max-height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -120,8 +145,6 @@ body {
   background: white;
   border-bottom: 1px solid #e2e8f0;
   padding: 1rem 1.5rem;
-  position: relative;
-  flex-shrink: 0;
 }
 
 .modal-body {
@@ -136,7 +159,6 @@ body {
   padding: 1rem 1.5rem;
   display: flex;
   justify-content: flex-end;
-  flex-shrink: 0;
   gap: 0.5rem;
 }
 
@@ -150,6 +172,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .btn:hover { 
@@ -161,7 +185,7 @@ body {
 .timeline { 
   border-left: 3px solid #e5e7eb; 
   position: relative;
-  margin-left: 0.875rem; /* Adicionado para alinhar com o ícone */
+  margin-left: 0.875rem;
 }
 
 .timeline-item { 
@@ -184,8 +208,8 @@ body {
   z-index: 10;
 }
 
-.timeline-item-log .timeline-icon { border-color: #3b82f6; color: #3b82f6; }
-.timeline-item-status .timeline-icon { border-color: #10b981; color: #10b981; }
+.timeline-item-log .timeline-icon { border-color: #b08d57; color: #b08d57; }
+.timeline-item-status .timeline-icon { border-color: #5a7d7c; color: #5a7d7c; }
 
 /* =============== NOTIFICAÇÕES =============== */
 .notification {
@@ -202,17 +226,9 @@ body {
   max-width: 300px;
 }
 
-.notification.show {
-  transform: translateX(0);
-}
-
-.notification.success {
-  background-color: #10b981;
-}
-
-.notification.error {
-  background-color: #ef4444;
-}
+.notification.show { transform: translateX(0); }
+.notification.success { background-color: #5a7d7c; }
+.notification.error { background-color: #c0392b; }
 
 /* =============== SEÇÕES DO MODAL DE DETALHES =============== */
 .section-title {
@@ -228,57 +244,21 @@ body {
 @media (max-width: 768px) {
     .modal-content {
         max-width: 95vw;
-        max-height: 100vh; /* CORREÇÃO: Permite altura total também em telas menores */
+        max-height: 100vh;
         margin: 1rem;
     }
-    
-    .modal-body {
-        padding: 1rem;
-    }
-    
-    .modal-header {
-        padding: 1rem;
-    }
-    
-    .modal-footer {
-        padding: 1rem;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .modal-footer .btn {
-        width: 100%;
-    }
-    
-    /* Modal de detalhes em telas pequenas */
-    #detailsForm {
-        grid-template-columns: 1fr;
-    }
+    .modal-body, .modal-header, .modal-footer { padding: 1rem; }
+    .modal-footer { flex-direction: column; }
+    .modal-footer .btn { width: 100%; }
+    #detailsForm { grid-template-columns: 1fr; }
 }
 
 /* Estilos para Impressão */
 @media print {
-    body {
-        background-color: #fff;
-    }
-    .no-print {
-        display: none !important;
-    }
-    .modal-body {
-        overflow: visible;
-    }
-    .modal-content {
-        box-shadow: none;
-        border: 1px solid #ccc;
-        max-height: none;
-    }
-    #app, #userScreen {
-        display: none;
-    }
-    #detailsModal {
-        display: block !important;
-        position: static;
-        background: none;
-        backdrop-filter: none;
-    }
+    body { background-color: #fff; }
+    .no-print { display: none !important; }
+    .modal-body { overflow: visible; }
+    .modal-content { box-shadow: none; border: 1px solid #ccc; max-height: none; }
+    #app, #userScreen { display: none; }
+    #detailsModal { display: block !important; position: static; background: none; backdrop-filter: none; }
 }

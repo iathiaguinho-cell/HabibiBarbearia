@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('atendimentoModalTitle').textContent = '🗓️ Agendar Novo Atendimento';
     const barbeiroSelect = document.getElementById('barbeiroResponsavel');
     const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
-    barbeiroSelect.innerHTML = '<option value="">Selecione...</option>' + barbeiros.map(b => `<option value="${b.name.replace(/👳🏽‍♂️|💈|🛎️/g, '').trim()}">${b.name.replace(/👑|💈|🛎️/g, '').trim()}</option>`).join('');
+    barbeiroSelect.innerHTML = '<option value="">Selecione...</option>' + barbeiros.map(b => `<option value="${b.name.replace(/👳🏽‍♂️|💈|🛎️/g, '').trim()}">${b.name.replace(/👳🏽‍♂️|💈|🛎️/g, '').trim()}</option>`).join('');
     const servicosList = document.getElementById('servicosList');
     servicosList.innerHTML = configData.servicos.map(s => `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="${s.price}" data-name="${s.name}" class="form-checkbox h-4 w-4"><span class="text-sm">${s.name} (${formatCurrency(s.price)})</span></label>`).join('');
     atendimentoModal.classList.remove('hidden');
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reportsModal').querySelector('h2').textContent = '📊 Relatórios de Desempenho';
     const barberSelect = document.getElementById('reportBarber');
     const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
-    barberSelect.innerHTML = '<option value="todos">Todos os Barbeiros</option>' + barbeiros.map(b => `<option value="${b.name.replace(/👑|💈|�️/g, '').trim()}">${b.name.replace(/👑|💈|🛎️/g, '').trim()}</option>`).join('');
+    barberSelect.innerHTML = '<option value="todos">Todos os Barbeiros</option>' + barbeiros.map(b => `<option value="${b.name.replace(/👳🏽‍♂️|💈|🛎️/g, '').trim()}">${b.name.replace(/👳🏽‍♂️|💈|🛎️/g, '').trim()}</option>`).join('');
     document.getElementById('reportSummaryCards').innerHTML = '';
     document.getElementById('reportTableContainer').classList.add('hidden');
     reportsModal.classList.remove('hidden');
@@ -460,7 +460,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!startDate || !endDate) return showNotification('Por favor, selecione data de início e fim.', 'error');
 
-    let filtered = Object.values(allAtendimentos).filter(a => a.createdAt && a.createdAt.split('T')[0] >= startDate && a.createdAt.split('T')[0] <= endDate);
+    // ALTERAÇÃO: Filtra apenas por atendimentos finalizados
+    let filtered = Object.values(allAtendimentos).filter(a => 
+        a.status === 'Finalizado' &&
+        a.createdAt && 
+        a.createdAt.split('T')[0] >= startDate && 
+        a.createdAt.split('T')[0] <= endDate
+    );
+    
     if (barberFilter !== 'todos') filtered = filtered.filter(a => a.barbeiroResponsavel === barberFilter);
 
     reportSummaryCards.innerHTML = '';
@@ -468,25 +475,31 @@ document.addEventListener('DOMContentLoaded', () => {
     reportTableContainer.classList.add('hidden');
 
     if (filtered.length === 0) {
-        reportSummaryCards.innerHTML = '<p class="text-center text-gray-500 py-4">🙁 Nenhum atendimento encontrado para o período.</p>';
+        reportSummaryCards.innerHTML = '<p class="text-center text-gray-500 py-4">🙁 Nenhum atendimento finalizado encontrado para o período.</p>';
         return;
     }
 
     const totalFaturado = filtered.reduce((sum, a) => sum + (a.valorTotal || 0), 0);
     
-    // ALTERAÇÃO: Lógica de cálculo de comissão
     const atendimentosPorBarbeiro = filtered.reduce((acc, a) => {
         const barbeiro = a.barbeiroResponsavel;
+        if (!barbeiro) return acc;
+
         if (!acc[barbeiro]) {
             acc[barbeiro] = { faturamento: 0, atendimentos: 0, comissao: 0 };
         }
         acc[barbeiro].faturamento += (a.valorTotal || 0);
         acc[barbeiro].atendimentos++;
 
-        const valorServicos = a.valorServicos || 0;
+        let valorServicos = a.valorServicos;
+        if (valorServicos === undefined && Array.isArray(a.servicos)) {
+            valorServicos = a.servicos.reduce((sum, s) => sum + (s.price || 0), 0);
+        }
+        valorServicos = valorServicos || 0;
+
         const desconto = a.desconto || 0;
-        const baseComissao = Math.max(0, valorServicos - desconto); // Garante que não seja negativo
-        acc[barbeiro].comissao += baseComissao * 0.50; // 50% de comissão
+        const baseComissao = Math.max(0, valorServicos - desconto);
+        acc[barbeiro].comissao += baseComissao * 0.50;
 
         return acc;
     }, {});
@@ -494,16 +507,16 @@ document.addEventListener('DOMContentLoaded', () => {
     reportSummaryCards.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div class="bg-green-100 p-4 rounded-lg text-center">
-                <p class="text-lg text-green-800">💰 Faturamento Total</p>
+                <p class="text-lg text-green-800">💰 Faturamento (Finalizados)</p>
                 <p class="text-3xl font-bold text-green-900">${formatCurrency(totalFaturado)}</p>
             </div>
             <div class="bg-blue-100 p-4 rounded-lg text-center">
-                <p class="text-lg text-blue-800">👥 Total de Atendimentos</p>
+                <p class="text-lg text-blue-800">👥 Atendimentos Finalizados</p>
                 <p class="text-3xl font-bold text-blue-900">${filtered.length}</p>
             </div>
         </div>
         <div>
-            <h3 class="text-xl font-bold mb-2">Desempenho por Barbeiro</h3>
+            <h3 class="text-xl font-bold mb-2">Desempenho por Barbeiro (Finalizados)</h3>
             ${Object.entries(atendimentosPorBarbeiro).map(([nome, data]) => `
                 <div class="border rounded-lg p-4 mb-4">
                     <h4 class="font-bold text-lg">${nome}</h4>
@@ -526,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     reportTableContainer.classList.remove('hidden');
 
-    currentReportTxtContent = `RELATÓRIO DE DESEMPENHO - HABIBI BARBEARIA\n==================================================\nPeríodo: ${startDate.split('-').reverse().join('/')} a ${endDate.split('-').reverse().join('/')}\nFiltro: ${barberFilter}\n==================================================\n\n` +
+    currentReportTxtContent = `RELATÓRIO DE DESEMPENHO (FINALIZADOS) - HABIBI BARBEARIA\n==================================================\nPeríodo: ${startDate.split('-').reverse().join('/')} a ${endDate.split('-').reverse().join('/')}\nFiltro: ${barberFilter}\n==================================================\n\n` +
     `RESUMO GERAL:\n  - 💰 Faturamento Total: ${formatCurrency(totalFaturado)}\n  - 👥 Total de Atendimentos: ${filtered.length}\n\n` +
     `DESEMPENHO POR BARBEIRO:\n` +
     Object.entries(atendimentosPorBarbeiro).map(([nome, data]) => 
@@ -542,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentReportTxtContent) {
           const startDate = document.getElementById('reportStartDate').value;
           const endDate = document.getElementById('reportEndDate').value;
-          const fileName = `Relatorio_Habibi_${startDate}_a_${endDate}.txt`;
+          const fileName = `Relatorio_Habibi_Finalizados_${startDate}_a_${endDate}.txt`;
           downloadReportAsTxt(currentReportTxtContent, fileName);
       } else {
           showNotification('Gere um relatório primeiro para poder baixar.', 'error');

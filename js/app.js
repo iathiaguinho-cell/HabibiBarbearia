@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentUser = null;
   let allAtendimentos = {};
   let produtosAdicionadosState = [];
-  let servicosAdicionadosState = []; // NOVO: Estado para serviços adicionados
+  let servicosAdicionadosState = [];
   let configData = { servicos: [], produtos: [] };
   
   // --- DADOS DA BARBEARIA ---
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const userScreen = document.getElementById('userScreen');
   const app = document.getElementById('app');
   const userList = document.getElementById('userList');
-  const kanbanBoard = document.getElementById('kanbanBoard');
+  const barberDashboard = document.getElementById('barberDashboard'); // MODIFICADO: Referência ao novo dashboard
   const addAtendimentoBtn = document.getElementById('addAtendimentoBtn');
   const logoutButton = document.getElementById('logoutButton');
   const atendimentoModal = document.getElementById('atendimentoModal');
@@ -74,30 +74,44 @@ document.addEventListener('DOMContentLoaded', () => {
   const configModal = document.getElementById('configModal');
   
   const formatStatus = (status) => status.replace(/-/g, ' ');
-  const formatCurrency = (value) => `R$ ${parseFloat(value).toFixed(2).replace('.', ',')}`;
+  const formatCurrency = (value) => `R$ ${parseFloat(value || 0).toFixed(2).replace('.', ',')}`;
 
   // ==================================================================
-  // LÓGICA DO KANBAN
+  // LÓGICA DO DASHBOARD POR BARBEIRO
   // ==================================================================
-  const initializeKanban = () => {
-    kanbanBoard.innerHTML = STATUS_LIST.map(status => {
-      const isFinalizado = status === 'Finalizado';
-      const searchInputHTML = isFinalizado ? `
-        <div class="my-2">
-          <input type="search" id="searchFinalizadoInput" placeholder="Buscar por nome..." 
-                 class="w-full p-2 text-sm border rounded-md">
-        </div>
-      ` : '';
-      return `
-        <div class="status-column p-4">
-          <h3 class="font-bold text-gray-800 mb-4 text-center">${formatStatus(status)}</h3>
-          ${searchInputHTML}
-          <div class="space-y-3 client-list" data-status="${status}"></div>
-        </div>`;
+  const initializeDashboard = () => {
+    const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Gestor');
+    barberDashboard.innerHTML = barbeiros.map(barber => {
+        return `
+            <section class="barber-section">
+                <h2 class="barber-header">${barber.name}</h2>
+                <div class="kanban-container">
+                    ${STATUS_LIST.map(status => {
+                        const isFinalizado = status === 'Finalizado';
+                        const searchInputHTML = isFinalizado ? `
+                            <div class="my-2">
+                                <input type="search" id="searchFinalizadoInput-${barber.name}" 
+                                       data-barber="${barber.name}"
+                                       placeholder="Buscar por nome..." 
+                                       class="w-full p-2 text-sm border rounded-md search-finalizado">
+                            </div>
+                        ` : '';
+                        return `
+                            <div class="status-column p-4">
+                                <h3 class="font-bold text-gray-800 mb-4 text-center">${formatStatus(status)}</h3>
+                                ${searchInputHTML}
+                                <div class="space-y-3 client-list" data-status="${status}" data-barber="${barber.name}"></div>
+                            </div>`;
+                    }).join('')}
+                </div>
+            </section>
+        `;
     }).join('');
-    if (document.getElementById('searchFinalizadoInput')) {
-      document.getElementById('searchFinalizadoInput').addEventListener('input', renderFinalizadoColumn);
-    }
+
+    // Adiciona listeners para as novas caixas de busca
+    document.querySelectorAll('.search-finalizado').forEach(input => {
+        input.addEventListener('input', (e) => renderSingleFinalizadoColumn(e.target.dataset.barber));
+    });
   };
 
   const createCardHTML = (atendimento) => {
@@ -108,34 +122,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevButton = prevStatus ? `<button data-id="${atendimento.id}" data-new-status="${prevStatus}" class="btn-move-status p-2 rounded-full hover:bg-gray-100"><i class='bx bx-chevron-left text-xl'></i></button>` : `<div class="w-10 h-10"></div>`;
     const nextButton = nextStatus ? `<button data-id="${atendimento.id}" data-new-status="${nextStatus}" class="btn-move-status p-2 rounded-full hover:bg-gray-100"><i class='bx bx-chevron-right text-xl'></i></button>` : `<div class="w-10 h-10"></div>`;
     
-    // CORREÇÃO: Garantir que servicos seja sempre um array
+    // Extração de informações para o card, conforme solicitado
+    const primeiroNome = atendimento.clienteNome.split(' ')[0];
+    const horario = atendimento.agendamento ? atendimento.agendamento.split('T')[1] : 'N/A';
     const servicosArray = Array.isArray(atendimento.servicos) ? atendimento.servicos : [];
     const servicosDisplay = servicosArray.map(s => typeof s === 'string' ? s : s.name).join(', ');
 
     return `
       <div id="${atendimento.id}" class="vehicle-card status-${atendimento.status}" data-id="${atendimento.id}">
-        <div class="flex justify-between items-start">
-            <div class="card-clickable-area cursor-pointer flex-grow">
-              <p class="font-bold text-sm text-amber-800">#${String(atendimento.fichaNumero).padStart(4, '0')}</p>
-              <p class="font-bold text-base text-gray-800">${atendimento.clienteNome}</p>
-              <p class="text-sm text-gray-600 truncate">${servicosDisplay}</p>
-              <p class="text-xs text-gray-500 mt-1">Barbeiro: ${atendimento.barbeiroResponsavel}</p>
-              <p class="text-sm font-bold text-green-700 mt-1">${formatCurrency(atendimento.valorTotal)}</p>
+        <div class="flex justify-between items-center">
+            <div class="card-clickable-area cursor-pointer flex-grow space-y-1 pr-2">
+              <div class="flex justify-between items-baseline">
+                <p class="font-bold text-lg text-gray-800">${primeiroNome}</p>
+                <p class="font-bold text-base text-amber-800">${horario}</p>
+              </div>
+              <p class="text-sm text-gray-600 truncate" title="${servicosDisplay || 'Serviços não especificados'}">${servicosDisplay || 'N/A'}</p>
+              <div class="flex justify-between items-center mt-2">
+                 <p class="text-xs text-gray-500">${atendimento.barbeiroResponsavel}</p>
+                 <p class="text-sm font-bold text-green-700">${formatCurrency(atendimento.valorTotal)}</p>
+              </div>
             </div>
-            <div class="flex flex-col -mt-1 -mr-1">${nextButton}${prevButton}</div>
+            <div class="flex flex-col items-center justify-center">
+                ${nextButton}
+                ${prevButton}
+            </div>
         </div>
       </div>`;
   };
 
-  const renderFinalizadoColumn = () => {
-      const list = kanbanBoard.querySelector('.client-list[data-status="Finalizado"]');
+  const renderSingleFinalizadoColumn = (barberName) => {
+      const list = barberDashboard.querySelector(`.client-list[data-barber="${barberName}"][data-status="Finalizado"]`);
       if (!list) return;
-      const searchInput = document.getElementById('searchFinalizadoInput');
+      const searchInput = document.getElementById(`searchFinalizadoInput-${barberName}`);
       const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-      let finalizados = Object.values(allAtendimentos).filter(a => a.status === 'Finalizado');
+      
+      let finalizados = Object.values(allAtendimentos).filter(a => 
+          a.status === 'Finalizado' && a.barbeiroResponsavel === barberName
+      );
+
       if (searchTerm) {
           finalizados = finalizados.filter(a => a.clienteNome.toLowerCase().includes(searchTerm));
       }
+      
       finalizados.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       list.innerHTML = finalizados.map(a => createCardHTML(a)).join('');
   };
@@ -146,9 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
       allAtendimentos[s.key] = { ...s.val(), id: s.key };
       const atendimento = allAtendimentos[s.key];
       if (atendimento.status === 'Finalizado') {
-        renderFinalizadoColumn();
+        renderSingleFinalizadoColumn(atendimento.barbeiroResponsavel);
       } else {
-        const list = kanbanBoard.querySelector(`.client-list[data-status="${atendimento.status}"]`);
+        const list = barberDashboard.querySelector(`.client-list[data-barber="${atendimento.barbeiroResponsavel}"][data-status="${atendimento.status}"]`);
         if (list) list.insertAdjacentHTML('beforeend', createCardHTML(atendimento));
       }
     });
@@ -158,11 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const atendimento = allAtendimentos[s.key];
       const card = document.getElementById(atendimento.id);
       if (card) card.remove();
-      if (oldAtendimento && oldAtendimento.status === 'Finalizado') renderFinalizadoColumn();
+      
+      if (oldAtendimento && oldAtendimento.status === 'Finalizado') {
+          renderSingleFinalizadoColumn(oldAtendimento.barbeiroResponsavel);
+      }
+
       if (atendimento.status === 'Finalizado') {
-        renderFinalizadoColumn();
+        renderSingleFinalizadoColumn(atendimento.barbeiroResponsavel);
       } else {
-        const list = kanbanBoard.querySelector(`.client-list[data-status="${atendimento.status}"]`);
+        const list = barberDashboard.querySelector(`.client-list[data-barber="${atendimento.barbeiroResponsavel}"][data-status="${atendimento.status}"]`);
         if (list) list.insertAdjacentHTML('beforeend', createCardHTML(atendimento));
       }
     });
@@ -171,7 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
       delete allAtendimentos[s.key];
       const card = document.getElementById(s.key);
       if (card) card.remove();
-      if (oldAtendimento && oldAtendimento.status === 'Finalizado') renderFinalizadoColumn();
+      if (oldAtendimento && oldAtendimento.status === 'Finalizado') {
+          renderSingleFinalizadoColumn(oldAtendimento.barbeiroResponsavel);
+      }
     });
   };
   
@@ -193,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     userScreen.classList.add('hidden');
     app.classList.remove('hidden');
     await loadConfig();
-    initializeKanban();
+    initializeDashboard(); // MODIFICADO: Chama a nova função de inicialização
     listenToAtendimentos();
   };
   
@@ -243,7 +277,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('detailsDesconto').value = atendimento.desconto || 0;
     document.getElementById('detailsObservacoes').value = atendimento.observacoes || '';
 
-    // NOVO: Popular select de serviços para adicionar
     const detailsServicosList = document.getElementById('detailsServicosList');
     detailsServicosList.innerHTML = '<option value="">-- Adicionar Serviço --</option>' + 
         configData.servicos.map(s => `<option value="${s.name}|${s.price}">${s.name} - ${formatCurrency(s.price)}</option>`).join('');
@@ -252,7 +285,6 @@ document.addEventListener('DOMContentLoaded', () => {
     detailsProdutosList.innerHTML = '<option value="avulso">-- Item Avulso --</option>' + 
         configData.produtos.map(p => `<option value="${p.name}|${p.price}">${p.name} - ${formatCurrency(p.price)}</option>`).join('');
 
-    // NOVO: Inicializar estados dos serviços e produtos
     servicosAdicionadosState = Array.isArray(atendimento.servicos) ? 
         atendimento.servicos.map(s => typeof s === 'string' ? 
             configData.servicos.find(cs => cs.name === s) || { name: s, price: 0 } : s) : [];
@@ -275,7 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
     detailsModal.classList.add('flex');
   };
 
-  // NOVO: Função para renderizar itens de serviços e produtos no modal
   const renderDetailsItems = () => {
       const servicosContainer = document.getElementById('detailsServicosContainer');
       servicosContainer.innerHTML = servicosAdicionadosState.map((s, index) => `
@@ -294,10 +325,9 @@ document.addEventListener('DOMContentLoaded', () => {
       `).join('') || '<span class="text-gray-500">Nenhum produto adicionado.</span>';
   };
 
-  // NOVO: Função para calcular o total com desconto
   const calculateDetailsTotal = () => {
-    const servicosTotal = servicosAdicionadosState.reduce((sum, s) => sum + s.price, 0);
-    const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
+    const servicosTotal = servicosAdicionadosState.reduce((sum, s) => sum + (s.price || 0), 0);
+    const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + (p.price || 0), 0);
     const desconto = parseFloat(document.getElementById('detailsDesconto').value) || 0;
     const total = servicosTotal + produtosTotal - desconto;
     document.getElementById('detailsValorTotalDisplay').textContent = formatCurrency(total);
@@ -402,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
     atendimentoModal.classList.add('hidden');
   });
 
-  kanbanBoard.addEventListener('click', (e) => {
+  barberDashboard.addEventListener('click', (e) => { // MODIFICADO: Listener agora no dashboard principal
     const moveBtn = e.target.closest('.btn-move-status');
     const cardArea = e.target.closest('.card-clickable-area');
     if (moveBtn) {
@@ -429,9 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // NOVO: Listeners para adicionar/remover serviços e produtos no modal de detalhes
   detailsModal.addEventListener('click', (e) => {
-      // Adicionar Serviço
       if (e.target.id === 'detailsAddServicoBtn') {
           const select = document.getElementById('detailsServicosList');
           if (!select.value) return;
@@ -441,14 +469,12 @@ document.addEventListener('DOMContentLoaded', () => {
           calculateDetailsTotal();
           select.value = "";
       }
-      // Remover Serviço
       if (e.target.classList.contains('remove-servico-btn')) {
           const index = parseInt(e.target.dataset.index);
           servicosAdicionadosState.splice(index, 1);
           renderDetailsItems();
           calculateDetailsTotal();
       }
-      // Adicionar Produto da Lista
       if (e.target.id === 'detailsAddProdutoBtn') {
           const select = document.getElementById('detailsProdutosList');
           if (select.value === 'avulso') {
@@ -463,7 +489,6 @@ document.addEventListener('DOMContentLoaded', () => {
           calculateDetailsTotal();
           select.value = "avulso";
       }
-      // Adicionar Produto Avulso
       if (e.target.id === 'detailsAddProdutoAvulsoBtn') {
           const name = document.getElementById('detailsProdutoAvulsoNome').value;
           const price = parseFloat(document.getElementById('detailsProdutoAvulsoPreco').value);
@@ -477,7 +502,6 @@ document.addEventListener('DOMContentLoaded', () => {
               document.getElementById('detailsProdutosList').value = 'avulso';
           }
       }
-      // Remover Produto
       if (e.target.classList.contains('remove-produto-btn')) {
           const index = parseInt(e.target.dataset.index);
           produtosAdicionadosState.splice(index, 1);
@@ -486,19 +510,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   });
 
-  // NOVO: Listener para recalcular total quando desconto muda
   detailsModal.addEventListener('input', (e) => {
       if (e.target.id === 'detailsDesconto') {
           calculateDetailsTotal();
       }
   });
 
-  // NOVO: Função para salvar detalhes com os novos campos
   const saveDetails = async () => {
     const id = document.getElementById('detailsAtendimentoId').value;
     
-    const servicosTotal = servicosAdicionadosState.reduce((sum, s) => sum + s.price, 0);
-    const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
+    const servicosTotal = servicosAdicionadosState.reduce((sum, s) => sum + (s.price || 0), 0);
+    const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + (p.price || 0), 0);
     const desconto = parseFloat(document.getElementById('detailsDesconto').value) || 0;
     
     const updates = {
@@ -538,7 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- LÓGICA DE RELATÓRIOS ---
+  // --- LÓGICA DE RELATÓRIOS (sem alterações) ---
   reportsBtn.addEventListener('click', () => {
       const barberSelect = document.getElementById('reportBarber');
       const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Gestor');
@@ -619,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
       resultDiv.innerHTML = reportHTML;
   });
 
-  // --- LÓGICA DE CONFIGURAÇÕES ---
+  // --- LÓGICA DE CONFIGURAÇÕES (sem alterações) ---
   configBtn.addEventListener('click', () => {
       renderConfigLists();
       configModal.classList.remove('hidden');

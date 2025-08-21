@@ -21,13 +21,15 @@ body {
     gap: 1.5rem;
 }
 
-/* Em telas menores, o Kanban se torna um container de flexbox com scroll horizontal */
+/* Em telas menores, o Kanban se torna um container com scroll horizontal */
 @media (max-width: 1024px) {
     .kanban-container {
         display: flex;
         overflow-x: auto;
+        scroll-behavior: smooth;
         padding-bottom: 1rem; /* Espaço para a barra de rolagem */
         scroll-snap-type: x mandatory; /* Efeito de "parada" nas colunas */
+        -webkit-overflow-scrolling: touch; /* Melhora a experiência de scroll em iOS */
     }
 }
 
@@ -45,13 +47,13 @@ body {
   }
 }
 
-.client-list { /* Nome da classe atualizado para clareza */
+.client-list {
   flex-grow: 1; 
   overflow-y: auto; /* Permite scroll vertical se a lista for longa */
   padding: 0 8px 8px 8px;
 }
 
-.vehicle-card { /* O nome da classe foi mantido para compatibilidade, mas o conteúdo é de clientes */
+.vehicle-card { /* O nome da classe foi mantido para compatibilidade */
   background: white; 
   border-radius: 8px; 
   padding: 12px; 
@@ -59,7 +61,6 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   transition: all 0.2s ease-in-out; 
   border-left: 5px solid;
-  cursor: pointer;
   position: relative;
 }
 
@@ -112,6 +113,7 @@ body {
   display: flex;
   justify-content: flex-end;
   flex-shrink: 0;
+  gap: 0.5rem;
 }
 
 /* =============== BOTÕES =============== */
@@ -135,12 +137,12 @@ body {
 .timeline { 
   border-left: 3px solid #e5e7eb; 
   position: relative;
+  margin-left: 0.875rem; /* Adicionado para alinhar com o ícone */
 }
 
 .timeline-item { 
   position: relative; 
   padding-left: 2.5rem; 
-  margin-bottom: 1.5rem;
 }
 
 .timeline-icon {
@@ -200,6 +202,9 @@ body {
 
 /* Estilos para Impressão */
 @media print {
+    body {
+        background-color: #fff;
+    }
     .no-print {
         display: none !important;
     }
@@ -209,5 +214,15 @@ body {
     .modal-content {
         box-shadow: none;
         border: 1px solid #ccc;
+        max-height: none;
+    }
+    #app, #userScreen {
+        display: none;
+    }
+    #detailsModal {
+        display: block !important;
+        position: static;
+        background: none;
+        backdrop-filter: none;
     }
 }

@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const userScreen = document.getElementById('userScreen');
   const app = document.getElementById('app');
   const userList = document.getElementById('userList');
-  const barberDashboard = document.getElementById('barberDashboard'); // MODIFICADO: Referência ao novo dashboard
+  const barberDashboard = document.getElementById('barberDashboard');
   const addAtendimentoBtn = document.getElementById('addAtendimentoBtn');
   const logoutButton = document.getElementById('logoutButton');
   const atendimentoModal = document.getElementById('atendimentoModal');
@@ -89,18 +89,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${STATUS_LIST.map(status => {
                         const isFinalizado = status === 'Finalizado';
                         const searchInputHTML = isFinalizado ? `
-                            <div class="my-2">
+                            <div class="my-2 px-2">
                                 <input type="search" id="searchFinalizadoInput-${barber.name}" 
                                        data-barber="${barber.name}"
-                                       placeholder="Buscar por nome..." 
+                                       placeholder="Buscar finalizado..." 
                                        class="w-full p-2 text-sm border rounded-md search-finalizado">
                             </div>
                         ` : '';
                         return `
-                            <div class="status-column p-4">
-                                <h3 class="font-bold text-gray-800 mb-4 text-center">${formatStatus(status)}</h3>
+                            <div class="status-column" data-status-header="${status}">
+                                <h3>${formatStatus(status)}</h3>
                                 ${searchInputHTML}
-                                <div class="space-y-3 client-list" data-status="${status}" data-barber="${barber.name}"></div>
+                                <div class="client-list" data-status="${status}" data-barber="${barber.name}"></div>
                             </div>`;
                     }).join('')}
                 </div>
@@ -108,21 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }).join('');
 
-    // Adiciona listeners para as novas caixas de busca
     document.querySelectorAll('.search-finalizado').forEach(input => {
         input.addEventListener('input', (e) => renderSingleFinalizadoColumn(e.target.dataset.barber));
     });
   };
 
   const createCardHTML = (atendimento) => {
-    const currentIndex = STATUS_LIST.indexOf(atendimento.status);
-    const prevStatus = currentIndex > 0 ? STATUS_LIST[currentIndex - 1] : null;
-    const nextStatus = currentIndex < STATUS_LIST.length - 1 ? STATUS_LIST[currentIndex + 1] : null;
-    
-    const prevButton = prevStatus ? `<button data-id="${atendimento.id}" data-new-status="${prevStatus}" class="btn-move-status p-2 rounded-full hover:bg-gray-100"><i class='bx bx-chevron-left text-xl'></i></button>` : `<div class="w-10 h-10"></div>`;
-    const nextButton = nextStatus ? `<button data-id="${atendimento.id}" data-new-status="${nextStatus}" class="btn-move-status p-2 rounded-full hover:bg-gray-100"><i class='bx bx-chevron-right text-xl'></i></button>` : `<div class="w-10 h-10"></div>`;
-    
-    // Extração de informações para o card, conforme solicitado
     const primeiroNome = atendimento.clienteNome.split(' ')[0];
     const horario = atendimento.agendamento ? atendimento.agendamento.split('T')[1] : 'N/A';
     const servicosArray = Array.isArray(atendimento.servicos) ? atendimento.servicos : [];
@@ -130,21 +121,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return `
       <div id="${atendimento.id}" class="vehicle-card status-${atendimento.status}" data-id="${atendimento.id}">
-        <div class="flex justify-between items-center">
-            <div class="card-clickable-area cursor-pointer flex-grow space-y-1 pr-2">
+        <div class="flex justify-between items-start">
+            <div class="card-clickable-area cursor-pointer flex-grow space-y-1 pr-2 card-info">
               <div class="flex justify-between items-baseline">
-                <p class="font-bold text-lg text-gray-800">${primeiroNome}</p>
-                <p class="font-bold text-base text-amber-800">${horario}</p>
+                <p class="name">${primeiroNome}</p>
+                <p class="time">${horario}</p>
               </div>
-              <p class="text-sm text-gray-600 truncate" title="${servicosDisplay || 'Serviços não especificados'}">${servicosDisplay || 'N/A'}</p>
+              <p class="text-sm truncate service" title="${servicosDisplay || 'Serviços não especificados'}">${servicosDisplay || 'N/A'}</p>
               <div class="flex justify-between items-center mt-2">
-                 <p class="text-xs text-gray-500">${atendimento.barbeiroResponsavel}</p>
-                 <p class="text-sm font-bold text-green-700">${formatCurrency(atendimento.valorTotal)}</p>
+                 <p class="barber">${atendimento.barbeiroResponsavel}</p>
+                 <p class="price">${formatCurrency(atendimento.valorTotal)}</p>
               </div>
             </div>
-            <div class="flex flex-col items-center justify-center">
-                ${nextButton}
-                ${prevButton}
+            <div class="flex flex-col items-center justify-center -mt-2 -mr-2">
+                <button data-id="${atendimento.id}" data-new-status="${STATUS_LIST[STATUS_LIST.indexOf(atendimento.status) + 1]}" class="btn-move-status p-2 rounded-full hover:bg-gray-200 ${!STATUS_LIST[STATUS_LIST.indexOf(atendimento.status) + 1] ? 'invisible' : ''}"><i class='bx bx-chevron-right text-2xl'></i></button>
+                <button data-id="${atendimento.id}" data-new-status="${STATUS_LIST[STATUS_LIST.indexOf(atendimento.status) - 1]}" class="btn-move-status p-2 rounded-full hover:bg-gray-200 ${!STATUS_LIST[STATUS_LIST.indexOf(atendimento.status) - 1] ? 'invisible' : ''}"><i class='bx bx-chevron-left text-2xl'></i></button>
             </div>
         </div>
       </div>`;
@@ -221,13 +212,20 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUser = user;
     localStorage.setItem('habibiUser', JSON.stringify(user));
     document.getElementById('currentUserName').textContent = user.name;
+    
+    // CORREÇÃO: Controla visibilidade dos botões de Gestor
     if (user.role === 'Gestor') {
         configBtn.classList.remove('hidden');
+        reportsBtn.classList.remove('hidden');
+    } else {
+        configBtn.classList.add('hidden');
+        reportsBtn.classList.add('hidden');
     }
+
     userScreen.classList.add('hidden');
     app.classList.remove('hidden');
     await loadConfig();
-    initializeDashboard(); // MODIFICADO: Chama a nova função de inicialização
+    initializeDashboard();
     listenToAtendimentos();
   };
   
@@ -246,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const updateAtendimentoStatus = (id, newStatus) => {
     const atendimento = allAtendimentos[id];
-    if (!atendimento) return;
+    if (!atendimento || !newStatus) return;
     const logEntry = {
         timestamp: new Date().toISOString(),
         user: currentUser.name,
@@ -432,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
     atendimentoModal.classList.add('hidden');
   });
 
-  barberDashboard.addEventListener('click', (e) => { // MODIFICADO: Listener agora no dashboard principal
+  barberDashboard.addEventListener('click', (e) => {
     const moveBtn = e.target.closest('.btn-move-status');
     const cardArea = e.target.closest('.card-clickable-area');
     if (moveBtn) {
@@ -560,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- LÓGICA DE RELATÓRIOS (sem alterações) ---
+  // --- LÓGICA DE RELATÓRIOS (CORRIGIDA E COM DOWNLOAD) ---
   reportsBtn.addEventListener('click', () => {
       const barberSelect = document.getElementById('reportBarber');
       const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Gestor');
@@ -569,6 +567,17 @@ document.addEventListener('DOMContentLoaded', () => {
       reportsModal.classList.remove('hidden');
       reportsModal.classList.add('flex');
   });
+
+  // NOVA FUNÇÃO PARA BAIXAR O RELATÓRIO COMO .TXT
+  const downloadReportAsTxt = (content, filename) => {
+      const element = document.createElement('a');
+      const file = new Blob([content], {type: 'text/plain'});
+      element.href = URL.createObjectURL(file);
+      element.download = filename;
+      document.body.appendChild(element); // Required for this to work in FireFox
+      element.click();
+      document.body.removeChild(element);
+  }
 
   document.getElementById('generateReportBtn').addEventListener('click', () => {
       const startDate = document.getElementById('reportStartDate').value;
@@ -598,10 +607,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const atendimentosPorBarbeiro = filtered.reduce((acc, a) => {
           const barbeiro = a.barbeiroResponsavel;
           if (!acc[barbeiro]) {
-              acc[barbeiro] = { faturamento: 0, atendimentos: 0, servicos: {} };
+              acc[barbeiro] = { faturamento: 0, atendimentos: 0, servicos: {}, produtos: 0 };
           }
           acc[barbeiro].faturamento += a.valorTotal;
           acc[barbeiro].atendimentos++;
+          acc[barbeiro].produtos += (a.produtos || []).length;
           const servicosArray = Array.isArray(a.servicos) ? a.servicos : [];
           servicosArray.forEach(s => {
               const servicoName = typeof s === 'string' ? s : s.name;
@@ -610,6 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return acc;
       }, {});
 
+      // GERAÇÃO DO HTML PARA EXIBIÇÃO
       let reportHTML = `
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div class="bg-green-100 p-4 rounded-lg text-center">
@@ -629,19 +640,48 @@ document.addEventListener('DOMContentLoaded', () => {
                       <div class="flex justify-around mt-2">
                           <p><strong>Faturamento:</strong> ${formatCurrency(data.faturamento)}</p>
                           <p><strong>Atendimentos:</strong> ${data.atendimentos}</p>
+                          <p><strong>Produtos Vendidos:</strong> ${data.produtos}</p>
                       </div>
-                      <p class="text-sm font-semibold mt-2">Serviços:</p>
+                      <p class="text-sm font-semibold mt-2">Serviços Realizados:</p>
                       <ul class="list-disc list-inside text-sm">
-                          ${Object.entries(data.servicos).map(([serv, count]) => `<li>${serv}: ${count}</li>`).join('')}
+                          ${Object.entries(data.servicos).map(([serv, count]) => `<li>${serv}: ${count}x</li>`).join('')}
                       </ul>
                   </div>
               `).join('')}
           </div>
       `;
       resultDiv.innerHTML = reportHTML;
+
+      // GERAÇÃO DO CONTEÚDO PARA O ARQUIVO .TXT E DOWNLOAD
+      let txtContent = `RELATÓRIO DE DESEMPENHO - HABIBI BARBEARIA\n`;
+      txtContent += `==================================================\n`;
+      txtContent += `Período: ${startDate.split('-').reverse().join('/')} a ${endDate.split('-').reverse().join('/')}\n`;
+      txtContent += `Barbeiro: ${barber}\n`;
+      txtContent += `==================================================\n\n`;
+      txtContent += `RESUMO GERAL:\n`;
+      txtContent += `  - Faturamento Total: ${formatCurrency(totalFaturado)}\n`;
+      txtContent += `  - Total de Atendimentos: ${totalClientes}\n\n`;
+      txtContent += `DESEMPENHO POR BARBEIRO:\n`;
+      
+      Object.entries(atendimentosPorBarbeiro).forEach(([nome, data]) => {
+          txtContent += `--------------------------------------------------\n`;
+          txtContent += `  Barbeiro: ${nome}\n`;
+          txtContent += `--------------------------------------------------\n`;
+          txtContent += `  - Faturamento: ${formatCurrency(data.faturamento)}\n`;
+          txtContent += `  - Atendimentos: ${data.atendimentos}\n`;
+          txtContent += `  - Produtos Vendidos: ${data.produtos}\n`;
+          txtContent += `  - Serviços Realizados:\n`;
+          Object.entries(data.servicos).forEach(([serv, count]) => {
+              txtContent += `      * ${serv}: ${count}x\n`;
+          });
+          txtContent += `\n`;
+      });
+      
+      const fileName = `Relatorio_Habibi_${startDate}_a_${endDate}.txt`;
+      downloadReportAsTxt(txtContent, fileName);
   });
 
-  // --- LÓGICA DE CONFIGURAÇÕES (sem alterações) ---
+  // --- LÓGICA DE CONFIGURAÇÕES ---
   configBtn.addEventListener('click', () => {
       renderConfigLists();
       configModal.classList.remove('hidden');

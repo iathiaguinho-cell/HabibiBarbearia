@@ -45,12 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
   let servicosAdicionadosState = [];
   let configData = { servicos: [], produtos: [] };
   
-  // --- DADOS DA BARBEARIA ---
+  // --- DADOS DA BARBEARIA (COM EMOJIS) ---
   const USERS = [
-    { name: 'Habibi', role: 'Gestor' }, 
-    { name: 'Júnior', role: 'Barbeiro' }, 
-    { name: 'Willian', role: 'Barbeiro' },
-    { name: 'Recepção', role: 'Recepcionista' }
+    { name: 'Habibi', role: 'Gestor 👑' }, 
+    { name: 'Júnior', role: 'Barbeiro 💈' }, 
+    { name: 'Willian', role: 'Barbeiro 💈' },
+    { name: 'Recepção', role: 'Recepcionista 🛎️' }
   ];
   
   const FORMAS_PAGAMENTO = ['Dinheiro', 'PIX', 'Cartão de Débito', 'Cartão de Crédito'];
@@ -73,14 +73,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const configBtn = document.getElementById('configBtn');
   const configModal = document.getElementById('configModal');
   
-  const formatStatus = (status) => status.replace(/-/g, ' ');
   const formatCurrency = (value) => `R$ ${parseFloat(value || 0).toFixed(2).replace('.', ',')}`;
+  
+  // Função de formatação de status com emojis
+  const formatStatus = (status) => {
+    const statusMap = {
+        'Aguardando': '⏳ Aguardando',
+        'Em-Atendimento': '✂️ Em Atendimento',
+        'Aguardando-Pagamento': '💳 Aguardando Pagamento',
+        'Finalizado': '✅ Finalizado'
+    };
+    return statusMap[status] || status.replace(/-/g, ' ');
+  };
 
   // ==================================================================
   // LÓGICA DO DASHBOARD POR BARBEIRO
   // ==================================================================
   const initializeDashboard = () => {
-    const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Gestor');
+    const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
     barberDashboard.innerHTML = barbeiros.map(barber => {
         return `
             <section class="barber-section">
@@ -213,8 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('habibiUser', JSON.stringify(user));
     document.getElementById('currentUserName').textContent = user.name;
     
-    // CORREÇÃO: Controla visibilidade dos botões de Gestor
-    if (user.role === 'Gestor') {
+    if (user.role.includes('Gestor')) {
         configBtn.classList.remove('hidden');
         reportsBtn.classList.remove('hidden');
     } else {
@@ -292,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderDetailsItems();
     calculateDetailsTotal();
 
-    if (currentUser.role === 'Gestor' || currentUser.role === 'Recepcionista') {
+    if (currentUser.role.includes('Gestor') || currentUser.role.includes('Recepcionista')) {
         deleteBtn.classList.remove('hidden');
     } else {
         deleteBtn.classList.add('hidden');
@@ -373,10 +382,10 @@ document.addEventListener('DOMContentLoaded', () => {
   addAtendimentoBtn.addEventListener('click', () => {
     atendimentoForm.reset();
     document.getElementById('atendimentoId').value = '';
-    document.getElementById('atendimentoModalTitle').textContent = 'Agendar Novo Atendimento';
+    document.getElementById('atendimentoModalTitle').textContent = '🗓️ Agendar Novo Atendimento';
     
     const barbeiroSelect = document.getElementById('barbeiroResponsavel');
-    const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Gestor');
+    const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
     barbeiroSelect.innerHTML = '<option value="">Selecione...</option>' + barbeiros.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
 
     const servicosList = document.getElementById('servicosList');
@@ -560,32 +569,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- LÓGICA DE RELATÓRIOS (CORRIGIDA E COM DOWNLOAD) ---
   reportsBtn.addEventListener('click', () => {
+      document.getElementById('reportsModal').querySelector('h2').textContent = '📊 Relatórios de Desempenho';
       const barberSelect = document.getElementById('reportBarber');
-      const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Gestor');
+      const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
       barberSelect.innerHTML = '<option value="todos">Todos os Barbeiros</option>' + barbeiros.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
       document.getElementById('reportResult').innerHTML = '';
       reportsModal.classList.remove('hidden');
       reportsModal.classList.add('flex');
   });
 
-  // NOVA FUNÇÃO PARA BAIXAR O RELATÓRIO COMO .TXT
   const downloadReportAsTxt = (content, filename) => {
+    try {
       const element = document.createElement('a');
-      const file = new Blob([content], {type: 'text/plain'});
+      const file = new Blob([content], {type: 'text/plain;charset=utf-8'});
       element.href = URL.createObjectURL(file);
       element.download = filename;
-      document.body.appendChild(element); // Required for this to work in FireFox
+      document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
+      showNotification('Relatório baixado com sucesso!', 'success');
+    } catch (error) {
+      console.error("Erro ao baixar o relatório:", error);
+      showNotification('Falha ao baixar o relatório.', 'error');
+    }
   }
 
   document.getElementById('generateReportBtn').addEventListener('click', () => {
+      showNotification('Gerando seu relatório...', 'success');
       const startDate = document.getElementById('reportStartDate').value;
       const endDate = document.getElementById('reportEndDate').value;
       const barber = document.getElementById('reportBarber').value;
       const resultDiv = document.getElementById('reportResult');
 
-      if (!startDate || !endDate) return showNotification('Por favor, selecione data de início e fim.', 'error');
+      if (!startDate || !endDate) {
+        showNotification('Por favor, selecione data de início e fim.', 'error');
+        return;
+      }
 
       let filtered = Object.values(allAtendimentos).filter(a => {
           const aDate = a.createdAt.split('T')[0];
@@ -597,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (filtered.length === 0) {
-          resultDiv.innerHTML = '<p class="text-center text-gray-500">Nenhum atendimento encontrado para o período e filtro selecionados.</p>';
+          resultDiv.innerHTML = '<p class="text-center text-gray-500">🙁 Nenhum atendimento encontrado para o período.</p>';
           return;
       }
 
@@ -612,23 +631,21 @@ document.addEventListener('DOMContentLoaded', () => {
           acc[barbeiro].faturamento += a.valorTotal;
           acc[barbeiro].atendimentos++;
           acc[barbeiro].produtos += (a.produtos || []).length;
-          const servicosArray = Array.isArray(a.servicos) ? a.servicos : [];
-          servicosArray.forEach(s => {
+          (Array.isArray(a.servicos) ? a.servicos : []).forEach(s => {
               const servicoName = typeof s === 'string' ? s : s.name;
               acc[barbeiro].servicos[servicoName] = (acc[barbeiro].servicos[servicoName] || 0) + 1;
           });
           return acc;
       }, {});
 
-      // GERAÇÃO DO HTML PARA EXIBIÇÃO
       let reportHTML = `
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div class="bg-green-100 p-4 rounded-lg text-center">
-                  <p class="text-lg text-green-800">Faturamento Total no Período</p>
+                  <p class="text-lg text-green-800">💰 Faturamento Total</p>
                   <p class="text-3xl font-bold text-green-900">${formatCurrency(totalFaturado)}</p>
               </div>
               <div class="bg-blue-100 p-4 rounded-lg text-center">
-                  <p class="text-lg text-blue-800">Total de Atendimentos</p>
+                  <p class="text-lg text-blue-800">👥 Total de Atendimentos</p>
                   <p class="text-3xl font-bold text-blue-900">${totalClientes}</p>
               </div>
           </div>
@@ -637,12 +654,12 @@ document.addEventListener('DOMContentLoaded', () => {
               ${Object.entries(atendimentosPorBarbeiro).map(([nome, data]) => `
                   <div class="border rounded-lg p-4 mb-4">
                       <h4 class="font-bold text-lg">${nome}</h4>
-                      <div class="flex justify-around mt-2">
-                          <p><strong>Faturamento:</strong> ${formatCurrency(data.faturamento)}</p>
-                          <p><strong>Atendimentos:</strong> ${data.atendimentos}</p>
-                          <p><strong>Produtos Vendidos:</strong> ${data.produtos}</p>
+                      <div class="flex justify-around mt-2 text-center">
+                          <p><strong>Faturamento:</strong><br>${formatCurrency(data.faturamento)}</p>
+                          <p><strong>Atendimentos:</strong><br>${data.atendimentos}</p>
+                          <p><strong>Produtos Vendidos:</strong><br>${data.produtos}</p>
                       </div>
-                      <p class="text-sm font-semibold mt-2">Serviços Realizados:</p>
+                      <p class="text-sm font-semibold mt-3">Serviços Realizados:</p>
                       <ul class="list-disc list-inside text-sm">
                           ${Object.entries(data.servicos).map(([serv, count]) => `<li>${serv}: ${count}x</li>`).join('')}
                       </ul>
@@ -652,15 +669,14 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       resultDiv.innerHTML = reportHTML;
 
-      // GERAÇÃO DO CONTEÚDO PARA O ARQUIVO .TXT E DOWNLOAD
       let txtContent = `RELATÓRIO DE DESEMPENHO - HABIBI BARBEARIA\n`;
       txtContent += `==================================================\n`;
       txtContent += `Período: ${startDate.split('-').reverse().join('/')} a ${endDate.split('-').reverse().join('/')}\n`;
-      txtContent += `Barbeiro: ${barber}\n`;
+      txtContent += `Filtro de Barbeiro: ${barber}\n`;
       txtContent += `==================================================\n\n`;
       txtContent += `RESUMO GERAL:\n`;
-      txtContent += `  - Faturamento Total: ${formatCurrency(totalFaturado)}\n`;
-      txtContent += `  - Total de Atendimentos: ${totalClientes}\n\n`;
+      txtContent += `  - 💰 Faturamento Total: ${formatCurrency(totalFaturado)}\n`;
+      txtContent += `  - 👥 Total de Atendimentos: ${totalClientes}\n\n`;
       txtContent += `DESEMPENHO POR BARBEIRO:\n`;
       
       Object.entries(atendimentosPorBarbeiro).forEach(([nome, data]) => {
@@ -683,6 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- LÓGICA DE CONFIGURAÇÕES ---
   configBtn.addEventListener('click', () => {
+      document.getElementById('configModal').querySelector('h2').textContent = '⚙️ Configurações Gerais';
       renderConfigLists();
       configModal.classList.remove('hidden');
       configModal.classList.add('flex');

@@ -13,7 +13,6 @@ body {
     box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
 }
 
-
 /* =============== LAYOUT DO KANBAN RESPONSIVO =============== */
 .kanban-container {
     display: grid;
@@ -31,6 +30,11 @@ body {
         scroll-snap-type: x mandatory; /* Efeito de "parada" nas colunas */
         -webkit-overflow-scrolling: touch; /* Melhora a experiência de scroll em iOS */
     }
+    
+    .status-column {
+        flex: 0 0 300px; /* Não encolhe, não cresce, base de 300px */
+        scroll-snap-align: start;
+    }
 }
 
 .status-column { 
@@ -40,11 +44,6 @@ body {
   flex-direction: column; 
   min-height: 100px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  /* Para o scroll horizontal em telas menores */
-  @media (max-width: 1024px) {
-    flex: 0 0 300px; /* Não encolhe, não cresce, base de 300px */
-    scroll-snap-align: start;
-  }
 }
 
 .client-list {
@@ -198,6 +197,38 @@ body {
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #e2e8f0;
+}
+
+/* =============== RESPONSIVIDADE PARA MODAIS =============== */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 95vw;
+        max-height: 95vh;
+        margin: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .modal-header {
+        padding: 1rem;
+    }
+    
+    .modal-footer {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+    }
+    
+    /* Modal de detalhes em telas pequenas */
+    #detailsForm {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Estilos para Impressão */

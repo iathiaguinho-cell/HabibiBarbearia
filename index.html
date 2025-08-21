@@ -115,7 +115,6 @@
         <div class="modal-body">
           <form id="detailsForm" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <input type="hidden" id="detailsAtendimentoId">
-            <!-- Coluna Esquerda: Resumo e Histórico -->
             <div class="space-y-6">
               <div class="bg-white rounded-lg shadow p-4">
                 <h3 class="section-title">📝 Resumo da Ficha</h3>
@@ -131,7 +130,6 @@
                 <div id="timelineContainer" class="timeline mt-4 space-y-6"></div>
               </div>
             </div>
-            <!-- Coluna Direita: Ações e Fechamento -->
             <div class="space-y-6" id="actions-column">
                <div class="bg-white rounded-lg shadow p-4">
                   <h3 class="section-title">➕ Adicionar Itens</h3>
@@ -194,7 +192,7 @@
 
   <!-- MODAL DE RELATÓRIOS -->
   <div id="reportsModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
-      <div class="modal-content w-full max-w-5xl">
+      <div class="modal-content w-full max-w-6xl"> <!-- Aumentado para max-w-6xl -->
           <div class="modal-header">
               <h2 class="text-2xl font-bold text-gray-800">📊 Relatórios de Desempenho</h2>
               <button class="btn-close-modal text-3xl text-gray-400 hover:text-gray-600">&times;</button>
@@ -214,10 +212,39 @@
                           <label for="reportBarber" class="text-sm font-medium">Barbeiro</label>
                           <select id="reportBarber" class="w-full p-2 border rounded-md"></select>
                       </div>
-                      <button id="generateReportBtn" class="btn bg-amber-800 text-white w-full">Gerar Relatório</button>
+                      <button id="generateReportBtn" class="btn bg-amber-800 text-white w-full">🔍 Gerar Relatório</button>
                   </div>
               </div>
-              <div id="reportResult" class="mt-6"></div>
+              <!-- NOVA ESTRUTURA PARA RESULTADOS -->
+              <div id="reportResult" class="mt-6">
+                  <div id="reportSummaryCards"></div>
+                  <div id="reportTableContainer" class="hidden mt-6">
+                      <div class="tablet-frame">
+                          <div class="tablet-screen">
+                              <table id="reportDetailTable" class="w-full text-sm text-left text-gray-500">
+                                  <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                      <tr>
+                                          <th scope="col" class="px-6 py-3">Ficha</th>
+                                          <th scope="col" class="px-6 py-3">Data</th>
+                                          <th scope="col" class="px-6 py-3">Cliente</th>
+                                          <th scope="col" class="px-6 py-3">Barbeiro</th>
+                                          <th scope="col" class="px-6 py-3">Serviços</th>
+                                          <th scope="col" class="px-6 py-3">Valor</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      <!-- Linhas da tabela serão inseridas aqui -->
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                      <div class="text-center mt-4">
+                          <button id="downloadReportBtn" class="btn bg-green-600 hover:bg-green-700 text-white">
+                            <i class='bx bxs-download'></i> Baixar Relatório (.txt)
+                          </button>
+                      </div>
+                  </div>
+              </div>
           </div>
       </div>
   </div>
@@ -259,4 +286,3 @@
 
 </body>
 </html>
-

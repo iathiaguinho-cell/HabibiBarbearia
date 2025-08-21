@@ -192,7 +192,7 @@
 
   <!-- MODAL DE RELATÓRIOS -->
   <div id="reportsModal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
-      <div class="modal-content w-full max-w-6xl"> <!-- Aumentado para max-w-6xl -->
+      <div class="modal-content w-full max-w-6xl">
           <div class="modal-header">
               <h2 class="text-2xl font-bold text-gray-800">📊 Relatórios de Desempenho</h2>
               <button class="btn-close-modal text-3xl text-gray-400 hover:text-gray-600">&times;</button>
@@ -215,7 +215,6 @@
                       <button id="generateReportBtn" class="btn bg-amber-800 text-white w-full">🔍 Gerar Relatório</button>
                   </div>
               </div>
-              <!-- NOVA ESTRUTURA PARA RESULTADOS -->
               <div id="reportResult" class="mt-6">
                   <div id="reportSummaryCards"></div>
                   <div id="reportTableContainer" class="hidden mt-6">
@@ -232,9 +231,7 @@
                                           <th scope="col" class="px-6 py-3">Valor</th>
                                       </tr>
                                   </thead>
-                                  <tbody>
-                                      <!-- Linhas da tabela serão inseridas aqui -->
-                                  </tbody>
+                                  <tbody></tbody>
                               </table>
                           </div>
                       </div>

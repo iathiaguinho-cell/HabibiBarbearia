@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentUser = null;
   let allAtendimentos = {};
   let produtosAdicionadosState = [];
-  let servicosAdicionadosState = []; // NOVO: Estado para serviços
+  let servicosAdicionadosState = []; // Estado para serviços adicionados no modal
   let configData = { servicos: [], produtos: [] };
   
   // --- DADOS DA BARBEARIA ---
@@ -108,7 +108,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevButton = prevStatus ? `<button data-id="${atendimento.id}" data-new-status="${prevStatus}" class="btn-move-status p-2 rounded-full hover:bg-gray-100"><i class='bx bx-chevron-left text-xl'></i></button>` : `<div class="w-10 h-10"></div>`;
     const nextButton = nextStatus ? `<button data-id="${atendimento.id}" data-new-status="${nextStatus}" class="btn-move-status p-2 rounded-full hover:bg-gray-100"><i class='bx bx-chevron-right text-xl'></i></button>` : `<div class="w-10 h-10"></div>`;
     
-    const servicosDisplay = atendimento.servicos.map(s => typeof s === 'string' ? s : s.name).join(', ');
+    // CORREÇÃO: Garantir que 'servicos' seja sempre um array antes de mapear
+    const servicosArray = Array.isArray(atendimento.servicos) ? atendimento.servicos : [];
+    const servicosDisplay = servicosArray.map(s => typeof s === 'string' ? s : s.name).join(', ');
 
     return `
       <div id="${atendimento.id}" class="vehicle-card status-${atendimento.status}" data-id="${atendimento.id}">
@@ -178,7 +180,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==================================================================
   const loadConfig = async () => {
     const snapshot = await db.ref('config').once('value');
-    configData = snapshot.val() || { servicos: [], produtos: [] };
+    const val = snapshot.val();
+    // Garantir que servicos e produtos sejam sempre arrays
+    configData = {
+        servicos: (val && val.servicos) ? val.servicos : [],
+        produtos: (val && val.produtos) ? val.produtos : []
+    };
   };
 
   const loginUser = async (user) => {
@@ -197,8 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const checkLoggedInUser = () => {
     const storedUser = localStorage.getItem('habibiUser');
-    if (storedUser) loginUser(JSON.parse(storedUser));
-    else {
+    if (storedUser) {
+        loginUser(JSON.parse(storedUser));
+    } else {
       userList.innerHTML = USERS.map(user =>
         `<div class="p-4 bg-gray-100 rounded-lg hover:bg-amber-100 cursor-pointer user-btn" data-user='${JSON.stringify(user)}'>
           <p class="font-semibold">${user.name}</p><p class="text-sm text-gray-500">${user.role}</p>
@@ -240,6 +248,366 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('detailsDescontoInput').value = atendimento.desconto || 0;
     document.getElementById('detailsObservacoes').value = atendimento.observacoes || '';
 
-    // --- NOVO: Lógica para popular selects de serviços e produtos ---
+    // --- Lógica para popular selects de serviços e produtos ---
     const detailsServicosList = document.getElementById('detailsServicosList');
-    detailsServicosList.innerHTML = '<option value="">-- Adicionar Serviço --</option>' + configData.servicos.map(s => `<option value="${s.name}|${s.price}">${s.name} - ${formatCurrency(s.price)}</option
+    detailsServicosList.innerHTML = '<option value="">-- Adicionar Serviço --</option>' + configData.servicos.map(s => `<option value="${s.name}|${s.price}">${s.name} - ${formatCurrency(s.price)}</option>`).join('');
+
+    const detailsProdutosList = document.getElementById('detailsProdutosList');
+    detailsProdutosList.innerHTML = '<option value="avulso">-- Item Avulso --</option>' + configData.produtos.map(p => `<option value="${p.name}|${p.price}">${p.name} - ${formatCurrency(p.price)}</option>`).join('');
+
+    // CORREÇÃO: Garantir que servicos e produtos sejam arrays antes de atribuir
+    servicosAdicionadosState = Array.isArray(atendimento.servicos) ? atendimento.servicos.map(s => typeof s === 'string' ? configData.servicos.find(cs => cs.name === s) || { name: s, price: 0 } : s) : [];
+    produtosAdicionadosState = Array.isArray(atendimento.produtos) ? atendimento.produtos : [];
+    
+    renderDetailsItems();
+    calculateDetailsTotal();
+
+    if (currentUser.role === 'Gestor' || currentUser.role === 'Recepcionista') {
+        deleteBtn.classList.remove('hidden');
+    } else {
+        deleteBtn.classList.add('hidden');
+    }
+    deleteBtn.dataset.id = id;
+    
+    renderTimeline(atendimento);
+    
+    detailsModal.classList.remove('hidden');
+    detailsModal.classList.add('flex');
+  };
+
+  const renderTimeline = (atendimento) => {
+    const timelineContainer = document.getElementById('timelineContainer');
+    const logs = atendimento.logs ? Object.values(atendimento.logs).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)) : [];
+    if (logs.length === 0) {
+      timelineContainer.innerHTML = '<p class="text-gray-500 text-center py-4">Nenhum histórico.</p>';
+      return;
+    }
+    timelineContainer.innerHTML = logs.map(log => {
+      const date = new Date(log.timestamp);
+      const formattedTime = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const isStatusLog = log.type === 'status';
+      return `
+        <div class="timeline-item ${isStatusLog ? 'timeline-item-status' : 'timeline-item-log'}">
+          <div class="timeline-icon"><i class='bx ${isStatusLog ? 'bx-transfer' : 'bx-message-detail'}'></i></div>
+          <div class="bg-gray-50 p-3 rounded-lg">
+            <div class="flex justify-between items-start mb-1">
+              <h4 class="font-semibold text-gray-800 text-sm">${log.user}</h4>
+              <span class="text-xs text-gray-500">${date.toLocaleDateString('pt-BR')} ${formattedTime}</span>
+            </div>
+            <p class="text-gray-700 text-sm">${log.description}</p>
+          </div>
+        </div>`;
+    }).join('');
+  };
+  
+  // ==================================================================
+  // LISTENERS DE EVENTOS
+  // ==================================================================
+  userList.addEventListener('click', (e) => {
+    const userBtn = e.target.closest('.user-btn');
+    if (userBtn) loginUser(JSON.parse(userBtn.dataset.user));
+  });
+  
+  logoutButton.addEventListener('click', () => {
+    localStorage.removeItem('habibiUser');
+    db.ref('atendimentos').off();
+    location.reload();
+  });
+  
+  addAtendimentoBtn.addEventListener('click', () => {
+    atendimentoForm.reset();
+    document.getElementById('atendimentoId').value = '';
+    document.getElementById('atendimentoModalTitle').textContent = 'Agendar Novo Atendimento';
+    
+    const barbeiroSelect = document.getElementById('barbeiroResponsavel');
+    const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Gestor');
+    barbeiroSelect.innerHTML = '<option value="">Selecione...</option>' + barbeiros.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
+
+    const servicosList = document.getElementById('servicosList');
+    servicosList.innerHTML = configData.servicos.map(s => `
+        <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="checkbox" value="${s.price}" data-name="${s.name}" class="form-checkbox h-4 w-4">
+            <span class="text-sm">${s.name} (${formatCurrency(s.price)})</span>
+        </label>
+    `).join('');
+    
+    atendimentoModal.classList.remove('hidden');
+    atendimentoModal.classList.add('flex');
+  });
+
+  atendimentoForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const selectedServicosChecks = Array.from(document.querySelectorAll('#servicosList input:checked'));
+    if (selectedServicosChecks.length === 0) return showNotification("Selecione pelo menos um serviço.", "error");
+
+    const configRef = db.ref('config/proximaFicha');
+    const { committed, snapshot } = await configRef.transaction(currentValue => (currentValue || 0) + 1);
+    if (!committed) return showNotification('Erro ao gerar número da ficha. Tente salvar novamente.', 'error');
+    const fichaNumero = snapshot.val();
+
+    const servicos = selectedServicosChecks.map(i => ({ name: i.dataset.name, price: parseFloat(i.value) }));
+    const servicosTotal = servicos.reduce((sum, s) => sum + s.price, 0);
+
+    const atendimentoData = {
+      fichaNumero,
+      clienteNome: document.getElementById('clienteNome').value,
+      agendamento: `${document.getElementById('agendamentoData').value}T${document.getElementById('agendamentoHora').value}`,
+      servicos: servicos,
+      produtos: [],
+      barbeiroResponsavel: document.getElementById('barbeiroResponsavel').value,
+      formaPagamento: FORMAS_PAGAMENTO[0],
+      valorServicos: servicosTotal,
+      valorProdutos: 0,
+      desconto: 0,
+      valorTotal: servicosTotal,
+      status: 'Aguardando',
+      createdAt: new Date().toISOString(),
+      logs: [{
+          timestamp: new Date().toISOString(),
+          user: currentUser.name,
+          description: 'Ficha de atendimento criada.',
+          type: 'log'
+      }]
+    };
+    
+    await db.ref('atendimentos').push(atendimentoData);
+    atendimentoModal.classList.add('hidden');
+  });
+
+  kanbanBoard.addEventListener('click', (e) => {
+    const moveBtn = e.target.closest('.btn-move-status');
+    const cardArea = e.target.closest('.card-clickable-area');
+    if (moveBtn) {
+      e.stopPropagation();
+      updateAtendimentoStatus(moveBtn.dataset.id, moveBtn.dataset.newStatus);
+    } else if (cardArea) {
+      const card = e.target.closest('.vehicle-card');
+      if (card) openDetailsModal(card.dataset.id);
+    }
+  });
+
+  document.querySelectorAll('.btn-close-modal').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.target.closest('.modal').classList.add('hidden');
+    });
+  });
+
+  deleteBtn.addEventListener('click', (e) => {
+    const id = e.target.dataset.id;
+    if (confirm(`Tem certeza que deseja excluir a ficha de ${allAtendimentos[id].clienteNome}?`)) {
+        db.ref(`atendimentos/${id}`).remove();
+        detailsModal.classList.add('hidden');
+        showNotification("Ficha excluída.", "success");
+    }
+  });
+
+  // --- LÓGICA DO MODAL DE DETALHES ---
+  const calculateDetailsTotal = () => {
+    const servicosTotal = servicosAdicionadosState.reduce((sum, s) => sum + s.price, 0);
+    const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
+    const desconto = parseFloat(document.getElementById('detailsDescontoInput').value) || 0;
+    document.getElementById('detailsValorTotalDisplay').textContent = formatCurrency(servicosTotal + produtosTotal - desconto);
+  };
+  detailsModal.addEventListener('input', (e) => {
+      if (e.target.id === 'detailsDescontoInput') {
+          calculateDetailsTotal();
+      }
+  });
+
+  const renderDetailsItems = () => {
+      const servicosContainer = document.getElementById('detailsServicos');
+      servicosContainer.innerHTML = servicosAdicionadosState.map((s, index) => `
+        <div class="flex justify-between items-center bg-gray-50 p-1 rounded text-sm">
+            <span>${s.name} - ${formatCurrency(s.price)}</span>
+            <button type="button" class="remove-servico-btn text-red-500 font-bold" data-index="${index}">&times;</button>
+        </div>
+      `).join('') || '<span class="text-gray-500">Nenhum serviço selecionado.</span>';
+
+      const produtosContainer = document.getElementById('detailsProdutosAdicionados');
+      produtosContainer.innerHTML = produtosAdicionadosState.map((p, index) => `
+        <div class="flex justify-between items-center bg-gray-100 p-1 rounded">
+            <span class="text-sm">${p.name} - ${formatCurrency(p.price)}</span>
+            <button type="button" class="remove-produto-btn text-red-500 font-bold" data-index="${index}">&times;</button>
+        </div>
+      `).join('');
+      
+      document.getElementById('detailsProdutos').textContent = produtosAdicionadosState.map(p => p.name).join(', ') || 'Nenhum';
+  };
+
+  detailsModal.addEventListener('click', (e) => {
+      // Adicionar Serviço
+      if (e.target.id === 'detailsAddServicoBtn') {
+          const select = document.getElementById('detailsServicosList');
+          if (!select.value) return;
+          const [name, price] = select.value.split('|');
+          servicosAdicionadosState.push({ name, price: parseFloat(price) });
+          renderDetailsItems();
+          calculateDetailsTotal();
+          select.value = ""; // Reset select
+      }
+      // Remover Serviço
+      if (e.target.classList.contains('remove-servico-btn')) {
+          const index = parseInt(e.target.dataset.index);
+          servicosAdicionadosState.splice(index, 1);
+          renderDetailsItems();
+          calculateDetailsTotal();
+      }
+      // Adicionar Produto da Lista
+      if (e.target.id === 'detailsAddProdutoBtn') {
+          const select = document.getElementById('detailsProdutosList');
+          if (select.value === 'avulso') {
+              document.getElementById('detailsProdutoAvulsoContainer').classList.remove('hidden');
+              return;
+          }
+          if (!select.value) return;
+          document.getElementById('detailsProdutoAvulsoContainer').classList.add('hidden');
+          const [name, price] = select.value.split('|');
+          produtosAdicionadosState.push({ name, price: parseFloat(price) });
+          renderDetailsItems();
+          calculateDetailsTotal();
+          select.value = "avulso"; // Reset select
+      }
+      // Adicionar Produto Avulso
+      if (e.target.id === 'detailsAddProdutoAvulsoBtn') {
+          const name = document.getElementById('detailsProdutoAvulsoNome').value;
+          const price = parseFloat(document.getElementById('detailsProdutoAvulsoPreco').value);
+          if (name && price > 0) {
+              produtosAdicionadosState.push({ name, price });
+              renderDetailsItems();
+              calculateDetailsTotal();
+              document.getElementById('detailsProdutoAvulsoNome').value = '';
+              document.getElementById('detailsProdutoAvulsoPreco').value = '';
+              document.getElementById('detailsProdutoAvulsoContainer').classList.add('hidden');
+              document.getElementById('detailsProdutosList').value = 'avulso';
+          }
+      }
+      // Remover Produto
+      if (e.target.classList.contains('remove-produto-btn')) {
+          const index = parseInt(e.target.dataset.index);
+          produtosAdicionadosState.splice(index, 1);
+          renderDetailsItems();
+          calculateDetailsTotal();
+      }
+  });
+
+  const saveDetails = async () => {
+    const id = document.getElementById('detailsAtendimentoId').value;
+    
+    const servicosTotal = servicosAdicionadosState.reduce((sum, s) => sum + s.price, 0);
+    const produtosTotal = produtosAdicionadosState.reduce((sum, p) => sum + p.price, 0);
+    const desconto = parseFloat(document.getElementById('detailsDescontoInput').value) || 0;
+    
+    const updates = {
+        servicos: servicosAdicionadosState,
+        produtos: produtosAdicionadosState,
+        formaPagamento: document.getElementById('detailsFormaPagamento').value,
+        desconto: desconto,
+        observacoes: document.getElementById('detailsObservacoes').value,
+        valorServicos: servicosTotal,
+        valorProdutos: produtosTotal,
+        valorTotal: servicosTotal + produtosTotal - desconto,
+        lastUpdate: new Date().toISOString()
+    };
+
+    await db.ref(`atendimentos/${id}`).update(updates);
+    return true;
+  };
+
+  detailsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await saveDetails();
+      showNotification('Ficha atualizada com sucesso!', 'success');
+      detailsModal.classList.add('hidden');
+  });
+
+  document.getElementById('saveAndNextStatusBtn').addEventListener('click', async () => {
+    const saved = await saveDetails();
+    if (saved) {
+        const id = document.getElementById('detailsAtendimentoId').value;
+        const atendimento = allAtendimentos[id];
+        const currentIndex = STATUS_LIST.indexOf(atendimento.status);
+        const nextStatus = STATUS_LIST[currentIndex + 1];
+        if (nextStatus) {
+            updateAtendimentoStatus(id, nextStatus);
+        }
+        detailsModal.classList.add('hidden');
+    }
+  });
+
+  // --- LÓGICA DE RELATÓRIOS ---
+  reportsBtn.addEventListener('click', () => {
+      const barberSelect = document.getElementById('reportBarber');
+      const barbeiros = USERS.filter(u => u.role === 'Barbeiro' || u.role === 'Gestor');
+      barberSelect.innerHTML = '<option value="todos">Todos os Barbeiros</option>' + barbeiros.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
+      document.getElementById('reportResult').innerHTML = '';
+      reportsModal.classList.remove('hidden');
+      reportsModal.classList.add('flex');
+  });
+
+  document.getElementById('generateReportBtn').addEventListener('click', () => {
+      const startDate = document.getElementById('reportStartDate').value;
+      const endDate = document.getElementById('reportEndDate').value;
+      const barber = document.getElementById('reportBarber').value;
+      const resultDiv = document.getElementById('reportResult');
+
+      if (!startDate || !endDate) return showNotification('Por favor, selecione data de início e fim.', 'error');
+
+      let filtered = Object.values(allAtendimentos).filter(a => {
+          const aDate = a.createdAt.split('T')[0];
+          return aDate >= startDate && aDate <= endDate;
+      });
+
+      if (barber !== 'todos') {
+          filtered = filtered.filter(a => a.barbeiroResponsavel === barber);
+      }
+
+      if (filtered.length === 0) {
+          resultDiv.innerHTML = '<p class="text-center text-gray-500">Nenhum atendimento encontrado para o período e filtro selecionados.</p>';
+          return;
+      }
+
+      const totalFaturado = filtered.reduce((sum, a) => sum + a.valorTotal, 0);
+      const totalClientes = filtered.length;
+      
+      const atendimentosPorBarbeiro = filtered.reduce((acc, a) => {
+          const barbeiro = a.barbeiroResponsavel;
+          if (!acc[barbeiro]) {
+              acc[barbeiro] = { faturamento: 0, atendimentos: 0, servicos: {} };
+          }
+          acc[barbeiro].faturamento += a.valorTotal;
+          acc[barbeiro].atendimentos++;
+          const servicosArray = Array.isArray(a.servicos) ? a.servicos : [];
+          servicosArray.forEach(s => {
+              const servicoName = typeof s === 'string' ? s : s.name;
+              acc[barbeiro].servicos[servicoName] = (acc[barbeiro].servicos[servicoName] || 0) + 1;
+          });
+          return acc;
+      }, {});
+
+      let reportHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div class="bg-green-100 p-4 rounded-lg text-center">
+                  <p class="text-lg text-green-800">Faturamento Total no Período</p>
+                  <p class="text-3xl font-bold text-green-900">${formatCurrency(totalFaturado)}</p>
+              </div>
+              <div class="bg-blue-100 p-4 rounded-lg text-center">
+                  <p class="text-lg text-blue-800">Total de Atendimentos</p>
+                  <p class="text-3xl font-bold text-blue-900">${totalClientes}</p>
+              </div>
+          </div>
+          <div>
+              <h3 class="text-xl font-bold mb-2">Desempenho por Barbeiro</h3>
+              ${Object.entries(atendimentosPorBarbeiro).map(([nome, data]) => `
+                  <div class="border rounded-lg p-4 mb-4">
+                      <h4 class="font-bold text-lg">${nome}</h4>
+                      <div class="flex justify-around mt-2">
+                          <p><strong>Faturamento:</strong> ${formatCurrency(data.faturamento)}</p>
+                          <p><strong>Atendimentos:</strong> ${data.atendimentos}</p>
+                      </div>
+                      <p class="text-sm font-semibold mt-2">Serviços:</p>
+                      <ul class="list-disc list-inside text-sm">
+                          ${Object.entries(data.servicos).map(([serv, count]) => `<li>${serv}: ${count}</li>`).join('')}
+                      </ul>
+                  </div>
+              `).join('')}
+          </div>

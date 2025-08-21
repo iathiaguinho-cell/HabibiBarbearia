@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let produtosAdicionadosState = [];
   let servicosAdicionadosState = [];
   let configData = { servicos: [], produtos: [] };
-  let currentReportTxtContent = ''; // Armazena o conteúdo do último relatório gerado
+  let currentReportTxtContent = '';
   
   const USERS = [
     { name: 'Habibi', role: 'Gestor 👑' }, 
@@ -87,21 +87,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const initializeDashboard = () => {
     const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
     barberDashboard.innerHTML = barbeiros.map(barber => {
+        const barberName = barber.name.replace(/👑|💈|🛎️/g, '').trim();
         return `
             <section class="barber-section">
-                <h2 class="barber-header">${barber.name}</h2>
+                <h2 class="barber-header">${barberName}</h2>
                 <div class="kanban-container">
                     ${STATUS_LIST.map(status => `
                         <div class="status-column" data-status-header="${status}">
                             <h3>${formatStatus(status)}</h3>
                             ${status === 'Finalizado' ? `
                             <div class="my-2 px-2">
-                                <input type="search" id="searchFinalizadoInput-${barber.name}" 
-                                       data-barber="${barber.name}"
+                                <input type="search" id="searchFinalizadoInput-${barberName}" 
+                                       data-barber="${barberName}"
                                        placeholder="Buscar..." 
                                        class="w-full p-2 text-sm border rounded-md search-finalizado">
                             </div>` : ''}
-                            <div class="client-list" data-status="${status}" data-barber="${barber.name}"></div>
+                            <div class="client-list" data-status="${status}" data-barber="${barberName}"></div>
                         </div>`).join('')}
                 </div>
             </section>
@@ -114,10 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const createCardHTML = (atendimento) => {
-    const primeiroNome = atendimento.clienteNome.split(' ')[0];
-    const horario = atendimento.agendamento ? atendimento.agendamento.split('T')[1] : 'N/A';
+    const primeiroNome = (atendimento.clienteNome || 'Cliente').split(' ')[0];
+    const horario = (atendimento.agendamento || '').split('T')[1] || 'N/A';
     const servicosArray = Array.isArray(atendimento.servicos) ? atendimento.servicos : [];
-    const servicosDisplay = servicosArray.map(s => typeof s === 'string' ? s : s.name).join(', ');
+    const servicosDisplay = servicosArray.map(s => s.name).join(', ');
 
     return `
       <div id="${atendimento.id}" class="vehicle-card status-${atendimento.status}" data-id="${atendimento.id}">
@@ -152,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
       );
 
       if (searchTerm) {
-          finalizados = finalizados.filter(a => a.clienteNome.toLowerCase().includes(searchTerm));
+          finalizados = finalizados.filter(a => (a.clienteNome || '').toLowerCase().includes(searchTerm));
       }
       
       finalizados.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -164,7 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ref.on('child_added', s => {
       allAtendimentos[s.key] = { ...s.val(), id: s.key };
       const atendimento = allAtendimentos[s.key];
-      const list = barberDashboard.querySelector(`.client-list[data-barber="${atendimento.barbeiroResponsavel}"][data-status="${atendimento.status}"]`);
+      const barberName = (atendimento.barbeiroResponsavel || '').replace(/👑|💈|🛎️/g, '').trim();
+      const list = barberDashboard.querySelector(`.client-list[data-barber="${barberName}"][data-status="${atendimento.status}"]`);
       if (list) list.insertAdjacentHTML('beforeend', createCardHTML(atendimento));
     });
     ref.on('child_changed', s => {
@@ -172,7 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
       allAtendimentos[s.key] = atendimento;
       const card = document.getElementById(s.key);
       if (card) card.remove();
-      const list = barberDashboard.querySelector(`.client-list[data-barber="${atendimento.barbeiroResponsavel}"][data-status="${atendimento.status}"]`);
+      const barberName = (atendimento.barbeiroResponsavel || '').replace(/👑|💈|🛎️/g, '').trim();
+      const list = barberDashboard.querySelector(`.client-list[data-barber="${barberName}"][data-status="${atendimento.status}"]`);
       if (list) list.insertAdjacentHTML('beforeend', createCardHTML(atendimento));
     });
     ref.on('child_removed', s => {
@@ -242,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('detailsClienteNome').textContent = atendimento.clienteNome;
     document.getElementById('detailsFichaNumero').textContent = `Ficha #${String(atendimento.fichaNumero).padStart(4, '0')}`;
     const [data, hora] = (atendimento.agendamento || 'T').split('T');
-    document.getElementById('detailsAgendamento').textContent = `${data.split('-').reverse().join('/')} às ${hora}`;
+    document.getElementById('detailsAgendamento').textContent = `${(data || '').split('-').reverse().join('/')} às ${hora || ''}`;
     document.getElementById('detailsBarbeiro').textContent = atendimento.barbeiroResponsavel;
     const formaPagamentoSelect = document.getElementById('detailsFormaPagamento');
     formaPagamentoSelect.innerHTML = FORMAS_PAGAMENTO.map(f => `<option value="${f}" ${f === atendimento.formaPagamento ? 'selected' : ''}>${f}</option>`).join('');
@@ -308,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('atendimentoModalTitle').textContent = '🗓️ Agendar Novo Atendimento';
     const barbeiroSelect = document.getElementById('barbeiroResponsavel');
     const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
-    barbeiroSelect.innerHTML = '<option value="">Selecione...</option>' + barbeiros.map(b => `<option value="${b.name}">${b.name.replace(/👑|💈|🛎️/g, '').trim()}</option>`).join('');
+    barbeiroSelect.innerHTML = '<option value="">Selecione...</option>' + barbeiros.map(b => `<option value="${b.name.replace(/👑|💈|🛎️/g, '').trim()}">${b.name.replace(/👑|💈|🛎️/g, '').trim()}</option>`).join('');
     const servicosList = document.getElementById('servicosList');
     servicosList.innerHTML = configData.servicos.map(s => `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="${s.price}" data-name="${s.name}" class="form-checkbox h-4 w-4"><span class="text-sm">${s.name} (${formatCurrency(s.price)})</span></label>`).join('');
     atendimentoModal.classList.remove('hidden');
@@ -423,8 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reportsModal').querySelector('h2').textContent = '📊 Relatórios de Desempenho';
     const barberSelect = document.getElementById('reportBarber');
     const barbeiros = USERS.filter(u => u.role.includes('Barbeiro') || u.role.includes('Gestor'));
-    barberSelect.innerHTML = '<option value="todos">Todos os Barbeiros</option>' + barbeiros.map(b => `<option value="${b.name}">${b.name.replace(/👑|💈|🛎️/g, '').trim()}</option>`).join('');
-    document.getElementById('reportResult').innerHTML = '';
+    barberSelect.innerHTML = '<option value="todos">Todos os Barbeiros</option>' + barbeiros.map(b => `<option value="${b.name.replace(/👑|💈|🛎️/g, '').trim()}">${b.name.replace(/👑|💈|🛎️/g, '').trim()}</option>`).join('');
+    document.getElementById('reportSummaryCards').innerHTML = '';
     document.getElementById('reportTableContainer').classList.add('hidden');
     reportsModal.classList.remove('hidden');
     reportsModal.classList.add('flex');
@@ -457,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!startDate || !endDate) return showNotification('Por favor, selecione data de início e fim.', 'error');
 
-    let filtered = Object.values(allAtendimentos).filter(a => a.createdAt.split('T')[0] >= startDate && a.createdAt.split('T')[0] <= endDate);
+    let filtered = Object.values(allAtendimentos).filter(a => a.createdAt && a.createdAt.split('T')[0] >= startDate && a.createdAt.split('T')[0] <= endDate);
     if (barber !== 'todos') filtered = filtered.filter(a => a.barbeiroResponsavel === barber);
 
     reportSummaryCards.innerHTML = '';
@@ -465,23 +468,23 @@ document.addEventListener('DOMContentLoaded', () => {
     reportTableContainer.classList.add('hidden');
 
     if (filtered.length === 0) {
-        reportSummaryCards.innerHTML = '<p class="text-center text-gray-500">🙁 Nenhum atendimento encontrado para o período.</p>';
+        reportSummaryCards.innerHTML = '<p class="text-center text-gray-500 py-4">🙁 Nenhum atendimento encontrado para o período.</p>';
         return;
     }
 
-    const totalFaturado = filtered.reduce((sum, a) => sum + a.valorTotal, 0);
+    const totalFaturado = filtered.reduce((sum, a) => sum + (a.valorTotal || 0), 0);
     reportSummaryCards.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><div class="bg-green-100 p-4 rounded-lg text-center"><p class="text-lg text-green-800">💰 Faturamento Total</p><p class="text-3xl font-bold text-green-900">${formatCurrency(totalFaturado)}</p></div><div class="bg-blue-100 p-4 rounded-lg text-center"><p class="text-lg text-blue-800">👥 Total de Atendimentos</p><p class="text-3xl font-bold text-blue-900">${filtered.length}</p></div></div>`;
     
     filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     reportTableBody.innerHTML = filtered.map(a => {
         const servicos = (Array.isArray(a.servicos) ? a.servicos : []).map(s => s.name).join(', ');
-        return `<tr class="bg-white border-b"><td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">#${String(a.fichaNumero).padStart(4, '0')}</td><td class="px-6 py-4">${a.createdAt.split('T')[0].split('-').reverse().join('/')}</td><td class="px-6 py-4">${a.clienteNome}</td><td class="px-6 py-4">${a.barbeiroResponsavel}</td><td class="px-6 py-4">${servicos}</td><td class="px-6 py-4">${formatCurrency(a.valorTotal)}</td></tr>`;
+        return `<tr class="bg-white border-b"><td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">#${String(a.fichaNumero || 'N/A').padStart(4, '0')}</td><td class="px-6 py-4">${(a.createdAt || '').split('T')[0].split('-').reverse().join('/')}</td><td class="px-6 py-4">${a.clienteNome}</td><td class="px-6 py-4">${a.barbeiroResponsavel}</td><td class="px-6 py-4">${servicos}</td><td class="px-6 py-4">${formatCurrency(a.valorTotal)}</td></tr>`;
     }).join('');
 
     reportTableContainer.classList.remove('hidden');
 
-    currentReportTxtContent = `RELATÓRIO DE DESEMPENHO - HABIBI BARBEARIA\n==================================================\nPeríodo: ${startDate.split('-').reverse().join('/')} a ${endDate.split('-').reverse().join('/')}\nFiltro: ${barber}\n==================================================\n\nDETALHAMENTO:\n\n` + filtered.map(a => `Ficha #${String(a.fichaNumero).padStart(4, '0')} | ${a.createdAt.split('T')[0].split('-').reverse().join('/')} | ${a.clienteNome} | ${a.barbeiroResponsavel} | ${formatCurrency(a.valorTotal)}`).join('\n') + `\n\nRESUMO GERAL:\n  - 💰 Faturamento Total: ${formatCurrency(totalFaturado)}\n  - 👥 Total de Atendimentos: ${filtered.length}\n`;
+    currentReportTxtContent = `RELATÓRIO DE DESEMPENHO - HABIBI BARBEARIA\n==================================================\nPeríodo: ${startDate.split('-').reverse().join('/')} a ${endDate.split('-').reverse().join('/')}\nFiltro: ${barber}\n==================================================\n\nDETALHAMENTO:\n\n` + filtered.map(a => `Ficha #${String(a.fichaNumero || 'N/A').padStart(4, '0')} | ${(a.createdAt || '').split('T')[0].split('-').reverse().join('/')} | ${a.clienteNome} | ${a.barbeiroResponsavel} | ${formatCurrency(a.valorTotal)}`).join('\n') + `\n\nRESUMO GERAL:\n  - 💰 Faturamento Total: ${formatCurrency(totalFaturado)}\n  - 👥 Total de Atendimentos: ${filtered.length}\n`;
   });
 
   document.getElementById('downloadReportBtn').addEventListener('click', () => {
@@ -548,3 +551,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   checkLoggedInUser();
 });
+

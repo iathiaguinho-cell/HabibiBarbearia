@@ -124,11 +124,6 @@
                   <div><strong class="block text-gray-500">Barbeiro:</strong> <span id="detailsBarbeiro"></span></div>
                   <div class="col-span-2"><strong class="block text-gray-500">Serviços:</strong> <span id="detailsServicos"></span></div>
                   <div class="col-span-2"><strong class="block text-gray-500">Produtos:</strong> <span id="detailsProdutos"></span></div>
-                  <div class="col-span-2 border-t mt-2 pt-2 grid grid-cols-3">
-                      <div class="text-center"><strong class="block text-gray-500">Subtotal</strong> <span id="detailsSubtotal" class="font-bold"></span></div>
-                      <div class="text-center"><strong class="block text-gray-500">Desconto</strong> <span id="detailsDesconto" class="font-bold text-red-600"></span></div>
-                      <div class="text-center"><strong class="block text-gray-500 text-lg">Valor Final</strong> <span id="detailsValorFinal" class="text-lg font-bold text-green-700"></span></div>
-                  </div>
                 </div>
               </div>
               <div class="bg-white rounded-lg shadow p-4">
@@ -139,16 +134,28 @@
             <!-- Coluna Direita: Ações e Fechamento -->
             <div class="space-y-6" id="actions-column">
                <div class="bg-white rounded-lg shadow p-4">
-                  <h3 class="section-title">Produtos e Consumo</h3>
-                  <div class="flex gap-2">
-                    <select id="detailsProdutosList" class="p-2 border rounded w-full"></select>
-                    <button type="button" id="detailsAddProdutoBtn" class="btn bg-gray-700 text-white px-3">Add</button>
+                  <h3 class="section-title">Adicionar Itens</h3>
+                  <!-- Adicionar Serviços -->
+                  <div class="mb-4">
+                      <label class="block text-sm font-medium text-gray-600 mb-1">Adicionar Serviço</label>
+                      <div class="flex gap-2">
+                          <select id="detailsServicosList" class="p-2 border rounded w-full"></select>
+                          <button type="button" id="detailsAddServicoBtn" class="btn bg-gray-700 text-white px-3">Add</button>
+                      </div>
                   </div>
-                  <div id="detailsProdutosAdicionados" class="mt-2 space-y-1"></div>
-                  <div id="detailsProdutoAvulsoContainer" class="hidden mt-2 space-y-2 border-t pt-2">
-                      <input type="text" id="detailsProdutoAvulsoNome" placeholder="Nome do item" class="p-2 border rounded w-full">
-                      <input type="number" id="detailsProdutoAvulsoPreco" placeholder="Preço (R$)" class="p-2 border rounded w-full">
-                      <button type="button" id="detailsAddProdutoAvulsoBtn" class="btn bg-blue-600 text-white w-full">Adicionar Item</button>
+                  <!-- Adicionar Produtos -->
+                  <div>
+                      <label class="block text-sm font-medium text-gray-600 mb-1">Adicionar Produto</label>
+                      <div class="flex gap-2">
+                          <select id="detailsProdutosList" class="p-2 border rounded w-full"></select>
+                          <button type="button" id="detailsAddProdutoBtn" class="btn bg-gray-700 text-white px-3">Add</button>
+                      </div>
+                      <div id="detailsProdutosAdicionados" class="mt-2 space-y-1"></div>
+                      <div id="detailsProdutoAvulsoContainer" class="hidden mt-2 space-y-2 border-t pt-2">
+                          <input type="text" id="detailsProdutoAvulsoNome" placeholder="Nome do item" class="p-2 border rounded w-full">
+                          <input type="number" id="detailsProdutoAvulsoPreco" placeholder="Preço (R$)" class="p-2 border rounded w-full">
+                          <button type="button" id="detailsAddProdutoAvulsoBtn" class="btn bg-blue-600 text-white w-full">Adicionar Item</button>
+                      </div>
                   </div>
                </div>
                <div class="bg-white rounded-lg shadow p-4">
@@ -158,8 +165,8 @@
                       <select id="detailsFormaPagamento" class="p-2 border rounded w-full"></select>
                   </div>
                   <div class="form-group mt-2">
-                      <label for="detailsDesconto" class="block text-sm font-medium">Desconto (R$)</label>
-                      <input id="detailsDesconto" type="number" step="0.01" value="0" class="p-2 border rounded w-full">
+                      <label for="detailsDescontoInput" class="block text-sm font-medium">Desconto (R$)</label>
+                      <input id="detailsDescontoInput" type="number" step="0.01" value="0" class="p-2 border rounded w-full">
                   </div>
                   <div class="form-group mt-2">
                       <label for="detailsObservacoes" class="block text-sm font-medium">Observações</label>
